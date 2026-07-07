@@ -1,0 +1,11 @@
+{
+  "lsp": {
+    "jdtls": {
+      "initialization_options": {
+        "workspaceFolders": [
+          "file://${ZED_WORKTREE_ROOT}"
+        ]
+      }
+    }
+  }
+}

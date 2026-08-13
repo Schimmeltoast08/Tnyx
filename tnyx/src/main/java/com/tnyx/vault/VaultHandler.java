@@ -193,6 +193,7 @@ public class VaultHandler {
             vault.getEntries().add(pw);
 
             writeVaultAtomic(filepath, vault, true);
+            vault.setLastEditedTime(Instant.now().getEpochSecond());
             Log.log("Added new Vault entry", 2);
         } catch (IOException e) {
             Log.log("Could not Open Vault file when adding entry", 4);

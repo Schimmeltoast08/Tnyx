@@ -105,10 +105,6 @@ public class Log {
         LOGGER.addHandler(fileHandler);
         LOGGER.setLevel(Level.ALL);
         LOGGER.setUseParentHandlers(false);
-        System.out.println(
-                "Tnyx log file: " + logFile.getAbsolutePath()
-        );
-
     }
 
     public static void log(String message, Level severity) {

@@ -35,11 +35,14 @@ encryption process{
   nonce
   encrypted Vault key // do more research on DEK u KEK
 }
+Time{
+  creation date
+  deletion date
+}
 encrypted data{
   nonce
   data aka ciphertext
 }
-maby timestamp of encryption // creation, last modification
 maby additional metadata //optional //user-settings
 
 

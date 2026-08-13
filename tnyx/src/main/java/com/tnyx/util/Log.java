@@ -33,8 +33,6 @@ public class Log {
         Level severityLevel = Level.INFO;
 
         switch (severity) {
-            case 0:
-                severityLevel = Level.OFF; break;
             case 1:
                 severityLevel = Level.FINE; break;
             case 2:

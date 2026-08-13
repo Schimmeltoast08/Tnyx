@@ -1,5 +1,6 @@
 package com.tnyx.vault;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Vault {
@@ -12,8 +13,11 @@ public class Vault {
     long creationTime;
     long lastEditedTime;
     byte[] nonce2;
+
     
-    private List<PasswordEntry> entries;
+    private List<PasswordEntry> entries = new ArrayList<>();
+
+
 
     public int getVaultFormatVersion() {
         return vaultFormatVersion;
@@ -109,7 +113,7 @@ public class Vault {
         /*for (byte b : nonce2){
             sb.append(b);
         }*/
-       
+
         String nonce2String = sb.toString();
 
         System.out.println(
@@ -126,5 +130,6 @@ public class Vault {
             nonce2String
         );
     }
+
 
 }

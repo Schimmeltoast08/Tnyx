@@ -38,4 +38,8 @@ public class PasswordEntry {
     public void setName(String name) {
         this.name = name;
     }
+
+    public String getPasswordEntryData(){
+        return (this.name + "||" + this.username + "||" + this.password + "||" + this.url);
+    }
 }

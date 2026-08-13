@@ -32,6 +32,7 @@ public class Main {
         if (args.length > 0 && args[0].equals("--open")){
             try {
                 Vault vault = VaultHandler.readVault(args[1]);
+                vault.printVault(); // temporary for developement
                 
             } catch (IOException e) {
                 Log.log("General Error at reading vault", 4);

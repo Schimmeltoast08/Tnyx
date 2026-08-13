@@ -87,4 +87,44 @@ public class Vault {
         this.entries = entries;
     }
 
+    public void addEntries(PasswordEntry entry){
+        entries.add(entry);
+    }
+
+    public void printVault(){
+        StringBuilder sb = new StringBuilder();
+
+        for (byte b : salt){
+            sb.append(b);
+        }
+        String saltString = sb.toString();
+        sb.setLength(0); // clear the sb
+
+        for (byte b : nonce){
+            sb.append(b);
+        }
+        String nonceString = sb.toString();
+        sb.setLength(0);
+
+        /*for (byte b : nonce2){
+            sb.append(b);
+        }*/
+       
+        String nonce2String = sb.toString();
+
+        System.out.println(
+
+
+
+            this.vaultFormatVersion + " " +
+            this.KDF + " " +
+            saltString + " " +
+            this.encryptionAlgorithm + " " +
+            nonceString + " " +
+            this.creationTime + " " +
+            this.lastEditedTime + " " +
+            nonce2String
+        );
+    }
+
 }

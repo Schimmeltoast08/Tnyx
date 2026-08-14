@@ -21,6 +21,7 @@ public class VaultHandler {
     private static final int VAULT_FORMAT_VERSION = 1;
     private static final String KDF = "Argon2id"; // replace \w name later
     private static final String ENCRYPTION_ALGORITHM = "AES"; // same as KDF
+    
 
     public static void createOpenVault(String filepath) throws IOException {
 
@@ -69,6 +70,10 @@ public class VaultHandler {
             }
 
             int formatVersion = dataIn.readUnsignedByte();
+
+            if (formatVersion != VAULT_FORMAT_VERSION){
+                Log.log("Format Versions do not match. Expected: " + VAULT_FORMAT_VERSION + " recieved: " + formatVersion, 3);
+            }
 //
 
             byte[] kdfMagic = new byte["[KDF]".getBytes().length];
@@ -190,10 +195,11 @@ public class VaultHandler {
         try {
             Vault vault = readVault(filepath);
 
-            vault.getEntries().add(pw);
+
+            vault.setLastEditedTime(Instant.now().getEpochSecond());
+
 
             writeVaultAtomic(filepath, vault, true);
-            vault.setLastEditedTime(Instant.now().getEpochSecond());
             Log.log("Added new Vault entry", 2);
         } catch (IOException e) {
             Log.log("Could not Open Vault file when adding entry", 4);

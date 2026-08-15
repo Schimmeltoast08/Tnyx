@@ -1,0 +1,145 @@
+package com.tnyx.vault;
+
+import com.tnyx.util.Log;
+import java.io.DataInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+public class VaultReader {
+
+    private static final int VAULT_FORMAT_VERSION = 1;
+
+    public static Vault readVault(String filepath) throws IOException {
+        Vault vault = new Vault();
+        try (DataInputStream dataIn = new DataInputStream(new FileInputStream(filepath))) {
+
+            //
+            byte[] formatMagic = new byte["[Format]".getBytes().length];
+            dataIn.readFully(formatMagic);
+            String formatHeader = new String(formatMagic, StandardCharsets.UTF_8);
+
+            if (!formatHeader.equals("[Format]")) {
+                Log.log("Format Error! missing [Format] header", 4);
+                throw new IOException("Invalid vault file: missing [Format] header");
+
+            }
+
+            int formatVersion = dataIn.readUnsignedByte();
+
+            if (formatVersion != VAULT_FORMAT_VERSION) {
+                Log.log("Format Versions do not match. Expected: " + VAULT_FORMAT_VERSION + " recieved: " + formatVersion, 3);
+            }
+//
+
+            byte[] kdfMagic = new byte["[KDF]".getBytes().length];
+            dataIn.readFully(kdfMagic);
+            String kdfHeader = new String(kdfMagic, StandardCharsets.UTF_8);
+
+            if (!kdfHeader.equals("[KDF]")) {
+                Log.log("Format Error! Missing [KDF] section header", 4);
+                throw new IOException("Invalid vault file: missing [KDF] section header");
+            }
+
+            int kdfLength = dataIn.readUnsignedByte();
+            byte[] kdfBytes = new byte[kdfLength];
+            dataIn.readFully(kdfBytes);
+
+            String KDF = new String(kdfBytes, StandardCharsets.UTF_8);
+
+            int saltLength = dataIn.readUnsignedByte();
+            byte[] saltBytes = new byte[saltLength];
+            dataIn.readFully(saltBytes);
+
+            byte[] encryptionMagic = new byte["[Encryption]".getBytes().length];
+            dataIn.readFully(encryptionMagic);
+            String encryptionHeader = new String(encryptionMagic, StandardCharsets.UTF_8);
+
+            if (!encryptionHeader.equals("[Encryption]")) {
+                Log.log("Format Error! Missing [Encryption] section header", 4);
+                throw new IOException("Invalid vault file: missing [Encryption] section header");
+            }
+
+            int encryptionAlgorithmLength = dataIn.readUnsignedByte();
+            byte[] encryptionAlgorithmBytes = new byte[encryptionAlgorithmLength];
+            dataIn.readFully(encryptionAlgorithmBytes);
+            String encryptionAlgorithm = new String(encryptionAlgorithmBytes, StandardCharsets.UTF_8);
+
+            int nonceLength = dataIn.readUnsignedByte();
+            byte[] nonceBytes = new byte[nonceLength];
+            dataIn.readFully(nonceBytes);
+
+            byte[] timeMagic = new byte["[Time]".getBytes().length];
+            dataIn.readFully(timeMagic);
+            String timeHeader = new String(timeMagic, StandardCharsets.UTF_8);
+
+            if (!timeHeader.equals("[Time]")) {
+                Log.log("Format Error! Missing [Time] section header", 4);
+                throw new IOException("Invalid vault file: missing [Time] section header");
+            }
+
+            long creationTime = dataIn.readLong();
+            long lastModifiedTime = dataIn.readLong();
+
+            byte[] dataMagic = new byte["[Data]".getBytes().length];
+            dataIn.readFully(dataMagic);
+            String dataHeader = new String(dataMagic, StandardCharsets.UTF_8);
+
+            if (!dataHeader.equals("[Data]")) {
+                Log.log("Format Error! Missing [Data] section header", 4);
+                throw new IOException("Invalid vault file: missing [Data] section header");
+            }
+
+            int nonce2Length = dataIn.readUnsignedByte();
+            byte[] nonce2Bytes = new byte[nonce2Length];
+            dataIn.readFully(nonce2Bytes);
+
+            int entryCount = dataIn.readInt();
+
+            for (int i = 0; i < entryCount; i++) {
+
+                int entryLength = dataIn.readInt();
+
+                if (entryLength < 0) {
+                    Log.log("Invalid entry length!", 4);
+                    throw new IOException("Invalid entry length: " + entryLength);
+                }
+
+                byte[] entryBytes = new byte[entryLength];
+
+                dataIn.readFully(entryBytes);
+
+                String entryData = new String(entryBytes, StandardCharsets.UTF_8);
+
+                String[] parts = entryData.split("\\|\\|", -1);
+                if (parts.length != 4) {
+                    throw new IOException("Invalid password entry");
+                }
+
+                PasswordEntry entry = new PasswordEntry();
+                entry.setName(parts[0]);
+                entry.setUsername(parts[1]);
+                entry.setPassword(parts[2]);
+                entry.setUrl(parts[3]);
+
+                vault.addEntries(entry);
+            }
+
+            vault.setVaultFormatVersion(formatVersion);
+            vault.setKDF(KDF);
+            vault.setSalt(saltBytes);
+            vault.setEncryptionAlgorithm(encryptionAlgorithm);
+            vault.setNonce(nonceBytes);
+            vault.setCreationTime(creationTime);
+            vault.setLastEditedTime(lastModifiedTime);
+            vault.setNonce2(nonce2Bytes);
+            ;
+
+        } catch (Exception e) {
+            Log.log("Error reading vault: " + e.getMessage(), 4);
+            throw new IOException("Could not read vault");
+        }
+        return vault;
+    }
+
+}

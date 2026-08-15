@@ -117,9 +117,6 @@ public class Vault {
         String nonce2String = sb.toString();
 
         System.out.println(
-
-
-
             this.vaultFormatVersion + " " +
             this.KDF + " " +
             saltString + " " +

@@ -11,9 +11,6 @@ public class Main {
 
     @SuppressWarnings("unused")
     private static final int TNYX_MAIN_VERSION = 1;
-    //private static final int VAULT_FORMAT_VERSION = 1;
-    //private static final String KDF = "Argon2id"; // replace \w name later
-    //private static final String ENCRYPTION_ALGORITHM = "AES"; // same as KDF
     
 
     public static void main(String[] args) {

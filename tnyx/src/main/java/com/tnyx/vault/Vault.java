@@ -1,5 +1,9 @@
 package com.tnyx.vault;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -116,16 +120,32 @@ public class Vault {
 
         String nonce2String = sb.toString();
 
+// EpochSecond to Human Readable format in Print
+        Instant creationInstant = Instant.ofEpochSecond(this.creationTime);
+        Instant lastEditedInstant = Instant.ofEpochSecond(lastEditedTime);
+
+        ZonedDateTime CreationZonedDateTime = creationInstant.atZone(ZoneId.of("UTC"));
+        ZonedDateTime lastEditedZonedDateTime = lastEditedInstant.atZone(ZoneId.of("UTC"));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
+ 
+        String humanReadableCreationTime = CreationZonedDateTime.format(formatter);
+        String humanReadableLastEditedTime = lastEditedZonedDateTime.format(formatter);
+//
+
         System.out.println(
             this.vaultFormatVersion + " " +
             this.KDF + " " +
             saltString + " " +
             this.encryptionAlgorithm + " " +
             nonceString + " " +
-            this.creationTime + " " +
-            this.lastEditedTime + " " +
-            nonce2String
+            "created: " + humanReadableCreationTime + " | " +
+            "last edited: " + humanReadableLastEditedTime + " " +
+            nonce2String +
+            "\nName  Username  Password   URL"
         );
+        for (PasswordEntry n : entries){
+            System.out.println(n.getPasswordEntryData());
+        }
     }
 
 

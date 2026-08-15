@@ -25,7 +25,7 @@ public class VaultReader {
 
             }
 
-            int formatVersion = dataIn.readUnsignedByte();
+            int formatVersion = dataIn.readInt();
 
             if (formatVersion != VAULT_FORMAT_VERSION) {
                 Log.log("Format Versions do not match. Expected: " + VAULT_FORMAT_VERSION + " recieved: " + formatVersion, 3);
@@ -41,13 +41,13 @@ public class VaultReader {
                 throw new IOException("Invalid vault file: missing [KDF] section header");
             }
 
-            int kdfLength = dataIn.readUnsignedByte();
+            int kdfLength = dataIn.readInt();
             byte[] kdfBytes = new byte[kdfLength];
             dataIn.readFully(kdfBytes);
 
             String KDF = new String(kdfBytes, StandardCharsets.UTF_8);
 
-            int saltLength = dataIn.readUnsignedByte();
+            int saltLength = dataIn.readInt();
             byte[] saltBytes = new byte[saltLength];
             dataIn.readFully(saltBytes);
 
@@ -60,12 +60,12 @@ public class VaultReader {
                 throw new IOException("Invalid vault file: missing [Encryption] section header");
             }
 
-            int encryptionAlgorithmLength = dataIn.readUnsignedByte();
+            int encryptionAlgorithmLength = dataIn.readInt();
             byte[] encryptionAlgorithmBytes = new byte[encryptionAlgorithmLength];
             dataIn.readFully(encryptionAlgorithmBytes);
             String encryptionAlgorithm = new String(encryptionAlgorithmBytes, StandardCharsets.UTF_8);
 
-            int nonceLength = dataIn.readUnsignedByte();
+            int nonceLength = dataIn.readInt();
             byte[] nonceBytes = new byte[nonceLength];
             dataIn.readFully(nonceBytes);
 
@@ -90,7 +90,7 @@ public class VaultReader {
                 throw new IOException("Invalid vault file: missing [Data] section header");
             }
 
-            int nonce2Length = dataIn.readUnsignedByte();
+            int nonce2Length = dataIn.readInt();
             byte[] nonce2Bytes = new byte[nonce2Length];
             dataIn.readFully(nonce2Bytes);
 
@@ -123,6 +123,14 @@ public class VaultReader {
                 entry.setUrl(parts[3]);
 
                 vault.addEntries(entry);
+
+                if (entryLength < 0){
+                    Log.log("Entry length smaller then zero (0), corrupted format", 4);
+                    throw new IOException("Entry length smaller then zero (0), corrupted format");
+                }
+
+
+
             }
 
             vault.setVaultFormatVersion(formatVersion);
@@ -133,12 +141,15 @@ public class VaultReader {
             vault.setCreationTime(creationTime);
             vault.setLastEditedTime(lastModifiedTime);
             vault.setNonce2(nonce2Bytes);
-            ;
+            
+
+            
 
         } catch (Exception e) {
             Log.log("Error reading vault: " + e.getMessage(), 4);
             throw new IOException("Could not read vault");
         }
+        
         return vault;
     }
 

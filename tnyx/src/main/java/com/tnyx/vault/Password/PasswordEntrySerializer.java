@@ -1,0 +1,96 @@
+package com.tnyx.vault.Password;
+
+import com.tnyx.vault.PasswordEntry;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+
+public class PasswordEntrySerializer {
+
+    public static byte[] serializePasswordEntry(PasswordEntry entry) {
+
+        byte[] name = entry.getName().getBytes(StandardCharsets.UTF_8);
+        byte[] username = entry.getUsername().getBytes(StandardCharsets.UTF_8);
+        byte[] password = entry.getPassword().getBytes(StandardCharsets.UTF_8);
+        byte[] url = entry.getUrl().getBytes(StandardCharsets.UTF_8);
+
+        int totalLength = 16
+                + name.length
+                + username.length
+                + password.length
+                + url.length;
+
+        ByteBuffer buffer = ByteBuffer.allocate(totalLength);
+
+        buffer.putInt(name.length);
+        buffer.putInt(username.length);
+        buffer.putInt(password.length);
+        buffer.putInt(url.length);
+
+        buffer.put(name);
+        buffer.put(username);
+        buffer.put(password);
+        buffer.put(url);
+
+        return buffer.array();
+    }
+
+
+
+//TODO Integrate this into readVault and writeVault! I just added the serialization and have no time today
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    public static PasswordEntry deserializePasswordEntry(byte[] entryBuffer) {
+        ByteBuffer buffer = ByteBuffer.wrap(entryBuffer);
+        PasswordEntry entry = new PasswordEntry();
+
+        int nameLength = buffer.getInt();
+        int usernameLength = buffer.getInt();
+        int passwordLength = buffer.getInt();
+        int urlLength = buffer.getInt();
+
+        byte[] nameBytes = new byte[nameLength];
+
+        byte[] usernameBytes = new byte[usernameLength];
+
+        byte[] passwordBytes = new byte[passwordLength];
+
+        byte[] urlBytes = new byte[urlLength];
+
+        buffer.get(nameBytes);
+        buffer.get(usernameBytes);
+        buffer.get(passwordBytes);
+        buffer.get(urlBytes);
+
+        String name = new String(nameBytes, StandardCharsets.UTF_8);
+        String username = new String(usernameBytes, StandardCharsets.UTF_8);
+        String password = new String(passwordBytes, StandardCharsets.UTF_8);
+        String url = new String(urlBytes, StandardCharsets.UTF_8);
+
+        entry.setName(name);
+        entry.setUsername(username);
+        entry.setPassword(password);
+        entry.setUrl(url);
+
+
+
+        return entry;
+    }
+
+}

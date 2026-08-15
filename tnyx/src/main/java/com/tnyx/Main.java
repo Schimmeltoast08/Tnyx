@@ -37,7 +37,31 @@ public class Main {
         }
 
         if (args.length > 0 && args[0].equals("--add")){
-            VaultHandler.addVaultEntry(args[1], args[2], args[3], args[4], args[5]);
+            String filepath = "";
+            String name = "";
+            String username = "";
+            String password = "";
+            String url = "";
+
+            try {
+                filepath = args[1];
+            } catch (Exception e) {}
+            try {
+                name = args[2];
+            } catch (Exception e) {}
+            try {
+                username = args[3];
+            } catch (Exception e) {}
+            try {
+                password = args[4];
+            } catch (Exception e) {} // Seperate try so when one fails, the others still go through
+            try {
+                url = args[5];  // now url is optional, so are they all from right to left as seen down below at addVaultEntry
+            } catch (Exception e) {}
+
+
+
+            VaultHandler.addVaultEntry(filepath, name, username, password, url);
         }
 
 

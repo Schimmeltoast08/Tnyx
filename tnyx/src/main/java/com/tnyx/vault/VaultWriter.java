@@ -1,6 +1,7 @@
 package com.tnyx.vault;
 
 import com.tnyx.util.Log;
+import com.tnyx.vault.Password.PasswordEntrySerializer;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,23 +27,23 @@ public class VaultWriter {
 
             //   Write Block   \\
             vaultOut.write("[Format]".getBytes(StandardCharsets.UTF_8));
-            vaultOut.write(vault.getVaultFormatVersion());
+            vaultOut.writeInt(vault.getVaultFormatVersion());
 
             vaultOut.write("[KDF]".getBytes(StandardCharsets.UTF_8));
             byte[] kdfBytes = vault.getKDF().getBytes(StandardCharsets.UTF_8);
-            vaultOut.write(kdfBytes.length);
+            vaultOut.writeInt(kdfBytes.length);
             vaultOut.write(kdfBytes);
 
-            vaultOut.write(vault.getSalt().length);
+            vaultOut.writeInt(vault.getSalt().length);
             vaultOut.write(vault.getSalt());
             //vaultOut.write(parameters);
 
             vaultOut.write("[Encryption]".getBytes(StandardCharsets.UTF_8));
             byte[] encryptionAlgorithmBytes = vault.getEncryptionAlgorithm().getBytes(StandardCharsets.UTF_8);
-            vaultOut.write(encryptionAlgorithmBytes.length);
+            vaultOut.writeInt(encryptionAlgorithmBytes.length);
             vaultOut.write(encryptionAlgorithmBytes);
 
-            vaultOut.write(vault.getNonce().length);
+            vaultOut.writeInt(vault.getNonce().length);
             vaultOut.write(vault.getNonce());
             // DEK u KEK, more research
             //vaultOut.write(Data);
@@ -54,7 +55,7 @@ public class VaultWriter {
             vaultOut.write("[Data]".getBytes(StandardCharsets.UTF_8));
 
             // nonce
-            vaultOut.writeByte(vault.getNonce2().length);
+            vaultOut.writeInt(vault.getNonce2().length);
             vaultOut.write(vault.getNonce2());
 
             // number of entries
@@ -62,6 +63,7 @@ public class VaultWriter {
 
             // entries
             for (PasswordEntry entry : vault.getEntries()) {
+                PasswordEntrySerializer.serializePasswordEntry(entry);
 
                 byte[] entryData = entry.getPasswordEntryData().getBytes(StandardCharsets.UTF_8);
                 vaultOut.writeInt(entryData.length); // first length of this entry

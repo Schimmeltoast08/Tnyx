@@ -42,4 +42,6 @@ public class PasswordEntry {
     public String getPasswordEntryData(){
         return (this.name + "||" + this.username + "||" + this.password + "||" + this.url);
     }
+
+
 }

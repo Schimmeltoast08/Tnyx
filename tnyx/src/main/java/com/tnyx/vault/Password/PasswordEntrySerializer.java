@@ -1,5 +1,6 @@
 package com.tnyx.vault.Password;
 
+import com.tnyx.util.Log;
 import com.tnyx.vault.PasswordEntry;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -34,8 +35,6 @@ public class PasswordEntrySerializer {
         return buffer.array();
     }
 
-
-
     public static PasswordEntry deserializePasswordEntry(byte[] entryBuffer) {
         ByteBuffer buffer = ByteBuffer.wrap(entryBuffer);
         PasswordEntry entry = new PasswordEntry();
@@ -44,6 +43,14 @@ public class PasswordEntrySerializer {
         int usernameLength = buffer.getInt();
         int passwordLength = buffer.getInt();
         int urlLength = buffer.getInt();
+
+        if (nameLength < 0
+                || usernameLength < 0
+                || passwordLength < 0
+                || urlLength < 0) {
+            Log.log("Corrupted file! Could not deserialize file, field length smaller then zero", 4);
+            throw new IllegalArgumentException("Negative field length");
+        }
 
         byte[] nameBytes = new byte[nameLength];
 
@@ -67,8 +74,6 @@ public class PasswordEntrySerializer {
         entry.setUsername(username);
         entry.setPassword(password);
         entry.setUrl(url);
-
-
 
         return entry;
     }

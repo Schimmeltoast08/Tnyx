@@ -1,11 +1,13 @@
 package com.tnyx.vault;
 
+import com.tnyx.util.Log;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 public class Vault {
 
@@ -18,11 +20,7 @@ public class Vault {
     long lastEditedTime = 0;
     byte[] nonce2 = {}; // in case a field is empty, avoid nullpointer exception //hope this does not break things
 
-
-    
     private List<PasswordEntry> entries = new ArrayList<>();
-
-
 
     public int getVaultFormatVersion() {
         return vaultFormatVersion;
@@ -92,24 +90,35 @@ public class Vault {
         return entries;
     }
 
-    public void setEntries(List<PasswordEntry> entries) {
-        this.entries = entries;
-    }
+    //public void setEntries(List<PasswordEntry> entries) {
+      //  this.entries = entries;
+    //}
 
-    public void addEntries(PasswordEntry entry){
+    public void addEntries(PasswordEntry entry) {
         entries.add(entry);
     }
 
-    public void printVault(){
+    public void removeEntry(UUID id) {
+        Log.log("Removing Entry " + id, 1);
+
+        boolean removed = entries.removeIf(entry -> entry.getId().equals(id));
+
+        if (!removed) {
+            Log.log("Removal of entry " + id + " failed! No such entry", 4);
+            throw new IllegalArgumentException("No entry found with ID: " + id);
+        }
+    }
+
+    public void printVault() {
         StringBuilder sb = new StringBuilder();
 
-        for (byte b : salt){
+        for (byte b : salt) {
             sb.append(b);
         }
         String saltString = sb.toString();
         sb.setLength(0); // clear the sb
 
-        for (byte b : nonce){
+        for (byte b : nonce) {
             sb.append(b);
         }
         String nonceString = sb.toString();
@@ -118,7 +127,6 @@ public class Vault {
         /*for (byte b : nonce2){
             sb.append(b);
         }*/
-
         String nonce2String = sb.toString();
 
 // EpochSecond to Human Readable format in Print
@@ -128,26 +136,25 @@ public class Vault {
         ZonedDateTime CreationZonedDateTime = creationInstant.atZone(ZoneId.of("UTC"));
         ZonedDateTime lastEditedZonedDateTime = lastEditedInstant.atZone(ZoneId.of("UTC"));
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss");
- 
+
         String humanReadableCreationTime = CreationZonedDateTime.format(formatter);
         String humanReadableLastEditedTime = lastEditedZonedDateTime.format(formatter);
 //
 
         System.out.println(
-            this.vaultFormatVersion + " " +
-            this.KDF + " " +
-            saltString + " " +
-            this.encryptionAlgorithm + " " +
-            nonceString + " " +
-            "created: " + humanReadableCreationTime + " | " +
-            "last edited: " + humanReadableLastEditedTime + " " +
-            nonce2String +
-            "\nName  Username  Password   URL"
+                this.vaultFormatVersion + " "
+                + this.KDF + " "
+                + saltString + " "
+                + this.encryptionAlgorithm + " "
+                + nonceString + " "
+                + "created: " + humanReadableCreationTime + " | "
+                + "last edited: " + humanReadableLastEditedTime + " "
+                + nonce2String
+                + "\nName     Username  Password          URL                     UUID"
         );
-        for (PasswordEntry n : entries){
+        for (PasswordEntry n : entries) {
             System.out.println(n.getPasswordEntryData());
         }
     }
-
 
 }

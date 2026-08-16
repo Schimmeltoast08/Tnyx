@@ -4,6 +4,7 @@ import com.tnyx.util.Log;
 import com.tnyx.vault.PasswordEntry;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 public class PasswordEntrySerializer {
 
@@ -14,13 +15,18 @@ public class PasswordEntrySerializer {
         byte[] password = entry.getPassword().getBytes(StandardCharsets.UTF_8);
         byte[] url = entry.getUrl().getBytes(StandardCharsets.UTF_8);
 
-        int totalLength = 16
+        UUID id = entry.getId();
+
+        int totalLength = 32 // 4x int a 4 byte + 16 bytes uuid
                 + name.length
                 + username.length
                 + password.length
                 + url.length;
 
         ByteBuffer buffer = ByteBuffer.allocate(totalLength);
+
+        buffer.putLong(id.getMostSignificantBits()); // get UUID bits
+        buffer.putLong(id.getLeastSignificantBits());
 
         buffer.putInt(name.length);
         buffer.putInt(username.length);
@@ -37,7 +43,13 @@ public class PasswordEntrySerializer {
 
     public static PasswordEntry deserializePasswordEntry(byte[] entryBuffer) {
         ByteBuffer buffer = ByteBuffer.wrap(entryBuffer);
-        PasswordEntry entry = new PasswordEntry();
+
+        long mostSignificantBits = buffer.getLong();
+        long leastSignificantBits = buffer.getLong();
+
+        UUID id = new UUID(mostSignificantBits, leastSignificantBits);
+
+        PasswordEntry entry = new PasswordEntry(id);
 
         int nameLength = buffer.getInt();
         int usernameLength = buffer.getInt();

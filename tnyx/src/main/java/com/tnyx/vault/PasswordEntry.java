@@ -1,11 +1,23 @@
 package com.tnyx.vault;
 
+import java.util.UUID;
+
 public class PasswordEntry {
     private String name = "";
     private String username = "";
     private String password = "";
     private String url = "";
+    private final UUID id;
 
+    public PasswordEntry() {
+        this.id = UUID.randomUUID();
+    }
+
+    public PasswordEntry(UUID id){
+        this.id = id;
+    }
+
+    
 
     public String getUrl() {
         return url;
@@ -40,7 +52,11 @@ public class PasswordEntry {
     }
 
     public String getPasswordEntryData(){
-        return (this.name + "||" + this.username + "||" + this.password + "||" + this.url);
+        return (this.name + " || " + this.username + " || " + this.password + " || " + this.url + " || " + this.id);
+    }
+
+    public UUID getId(){
+        return this.id;
     }
 
 

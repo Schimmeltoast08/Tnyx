@@ -64,6 +64,12 @@ public class Main {
             VaultHandler.addVaultEntry(filepath, name, username, password, url);
         }
 
+        if (args.length > 0 && args[0].equals("--remove")){
+            try{
+                VaultHandler.removeEntry(args[1]);
+            } catch (IOException e){}
+        }
+
 
 
 

@@ -3,6 +3,10 @@ package com.tnyx.vault;
 import com.tnyx.util.Log;
 import java.io.IOException;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Scanner;
+import java.util.UUID;
 
 public class VaultHandler {
 
@@ -15,6 +19,33 @@ public class VaultHandler {
 
     public static Vault readVault(String filepath) throws IOException {
         return VaultReader.readVault(filepath);
+    }
+
+    public static void removeEntry(String filepath) throws IOException{
+        Vault vault = VaultReader.readVault(filepath);
+        
+        List<PasswordEntry> entries = vault.getEntries();
+        //HashMap<int, UUID> map  = new HashMap<int, UUID>();
+        HashMap<Integer, UUID> map = new HashMap<Integer, UUID>();
+
+        Integer i = 1; // would like it to be 0, but bad UX. Users are not programmers.
+        System.out.println("ID  name    username    UUID");
+        for (PasswordEntry entry : entries){
+            System.out.println( i + " | " + entry.getName() + " | " + entry.getUsername() + " | " + entry.getId());
+            map.put(i, entry.getId());
+            i++;
+        }
+
+        System.out.print("choose ID to remove: ");
+        Scanner scanner = new Scanner(System.in);
+        
+        int choice = scanner.nextInt();
+        UUID choiceUUID = map.get(choice);
+
+
+        vault.removeEntry(choiceUUID);
+        VaultWriter.writeVaultAtomic(filepath, vault, true);
+        scanner.close();
     }
 
     public static void writeVaultAtomic(String filepath, Vault vault, Boolean atomic) throws IOException {
@@ -35,7 +66,7 @@ public class VaultHandler {
 
             vault.setLastEditedTime(Instant.now().getEpochSecond());
 
-            vault.getEntries().add(pw);
+            vault.addEntries(pw);
             VaultWriter.writeVaultAtomic(filepath, vault, true);
 
             Log.log("Added new Vault entry", 2);

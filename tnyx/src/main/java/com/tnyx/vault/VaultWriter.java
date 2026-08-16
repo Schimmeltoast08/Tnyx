@@ -15,7 +15,7 @@ import java.time.Instant;
 
 public class VaultWriter {
 
-    private static final int VAULT_FORMAT_VERSION = 1;
+    private static final int VAULT_FORMAT_VERSION = 2;
     private static final String KDF = "Argon2id"; // replace \w name later
     private static final String ENCRYPTION_ALGORITHM = "AES"; // same as KDF
 
@@ -63,7 +63,6 @@ public class VaultWriter {
 
             // entries
             for (PasswordEntry entry : vault.getEntries()) {
-                
 
                 byte[] entryData = PasswordEntrySerializer.serializePasswordEntry(entry);
                 vaultOut.writeInt(entryData.length); // first length of this entry

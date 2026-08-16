@@ -110,34 +110,13 @@ public class VaultReader {
 
                 dataIn.readFully(entryBytes);
 
-/*                String entryData = new String(entryBytes, StandardCharsets.UTF_8);
-
-                String[] parts = entryData.split("\\|\\|", -1);
-                if (parts.length != 4) {
-                    throw new IOException("Invalid password entry");
-                }
-
-                PasswordEntry entry = new PasswordEntry();
-                entry.setName(parts[0]);
-                entry.setUsername(parts[1]);
-                entry.setPassword(parts[2]);
-                entry.setUrl(parts[3]);
-
-                vault.addEntries(entry);
-*/
-
                 PasswordEntry entry = PasswordEntrySerializer.deserializePasswordEntry(entryBytes);
                 vault.addEntries(entry);
 
-
-
-
-                if (entryLength < 0){
+                if (entryLength < 0) {
                     Log.log("Entry length smaller then zero (0), corrupted format", 4);
                     throw new IOException("Entry length smaller then zero (0), corrupted format");
                 }
-
-
 
             }
 
@@ -149,15 +128,12 @@ public class VaultReader {
             vault.setCreationTime(creationTime);
             vault.setLastEditedTime(lastModifiedTime);
             vault.setNonce2(nonce2Bytes);
-            
-
-            
 
         } catch (Exception e) {
             Log.log("Error reading vault: " + e.getMessage(), 4);
             throw new IOException("Could not read vault");
         }
-        
+
         return vault;
     }
 

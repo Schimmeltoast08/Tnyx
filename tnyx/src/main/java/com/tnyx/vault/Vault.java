@@ -9,14 +9,15 @@ import java.util.List;
 
 public class Vault {
 
-    int vaultFormatVersion;
-    String KDF;
-    byte[] salt;
-    String encryptionAlgorithm;
-    byte[] nonce;
-    long creationTime;
-    long lastEditedTime;
-    byte[] nonce2;
+    int vaultFormatVersion = 0;
+    String KDF = "";
+    byte[] salt = {};
+    String encryptionAlgorithm = "";
+    byte[] nonce = {};
+    long creationTime = 0;
+    long lastEditedTime = 0;
+    byte[] nonce2 = {}; // in case a field is empty, avoid nullpointer exception //hope this does not break things
+
 
     
     private List<PasswordEntry> entries = new ArrayList<>();

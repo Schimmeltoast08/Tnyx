@@ -36,26 +36,6 @@ public class PasswordEntrySerializer {
 
 
 
-//TODO Integrate this into readVault and writeVault! I just added the serialization and have no time today
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     public static PasswordEntry deserializePasswordEntry(byte[] entryBuffer) {
         ByteBuffer buffer = ByteBuffer.wrap(entryBuffer);
         PasswordEntry entry = new PasswordEntry();

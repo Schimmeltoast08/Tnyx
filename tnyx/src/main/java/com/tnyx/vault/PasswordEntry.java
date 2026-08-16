@@ -1,10 +1,10 @@
 package com.tnyx.vault;
 
 public class PasswordEntry {
-    private String name;
-    private String username;
-    private String password;
-    private String url;
+    private String name = "";
+    private String username = "";
+    private String password = "";
+    private String url = "";
 
 
     public String getUrl() {

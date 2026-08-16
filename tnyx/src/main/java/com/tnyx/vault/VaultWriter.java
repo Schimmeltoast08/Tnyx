@@ -63,9 +63,9 @@ public class VaultWriter {
 
             // entries
             for (PasswordEntry entry : vault.getEntries()) {
-                PasswordEntrySerializer.serializePasswordEntry(entry);
+                
 
-                byte[] entryData = entry.getPasswordEntryData().getBytes(StandardCharsets.UTF_8);
+                byte[] entryData = PasswordEntrySerializer.serializePasswordEntry(entry);
                 vaultOut.writeInt(entryData.length); // first length of this entry
                 vaultOut.write(entryData); // then entry
             }

@@ -1,6 +1,7 @@
 package com.tnyx.vault;
 
 import com.tnyx.util.Log;
+import com.tnyx.vault.Password.PasswordEntrySerializer;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -109,7 +110,7 @@ public class VaultReader {
 
                 dataIn.readFully(entryBytes);
 
-                String entryData = new String(entryBytes, StandardCharsets.UTF_8);
+/*                String entryData = new String(entryBytes, StandardCharsets.UTF_8);
 
                 String[] parts = entryData.split("\\|\\|", -1);
                 if (parts.length != 4) {
@@ -123,6 +124,13 @@ public class VaultReader {
                 entry.setUrl(parts[3]);
 
                 vault.addEntries(entry);
+*/
+
+                PasswordEntry entry = PasswordEntrySerializer.deserializePasswordEntry(entryBytes);
+                vault.addEntries(entry);
+
+
+
 
                 if (entryLength < 0){
                     Log.log("Entry length smaller then zero (0), corrupted format", 4);

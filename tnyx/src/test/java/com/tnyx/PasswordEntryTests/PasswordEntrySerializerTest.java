@@ -1,4 +1,4 @@
-package com.tnyx;
+package com.tnyx.PasswordEntryTests;
 
 import com.tnyx.vault.Password.PasswordEntrySerializer;
 import com.tnyx.vault.PasswordEntry;

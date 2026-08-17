@@ -1,5 +1,6 @@
-package com.tnyx.vault;
+package com.tnyx.PasswordEntryTests;
 
+import com.tnyx.vault.PasswordEntry;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;

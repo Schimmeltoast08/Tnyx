@@ -70,6 +70,12 @@ public class Main {
             } catch (IOException e){}
         }
 
+        if (args.length > 0 && args[0].equals("--edit")){
+            try{
+            VaultHandler.editEntry(args[1]);
+            } catch (Exception e){}
+        }
+
 
 
 

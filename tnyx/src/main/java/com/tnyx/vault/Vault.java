@@ -90,6 +90,16 @@ public class Vault {
         return entries;
     }
 
+    public PasswordEntry getEntry(UUID uuid){
+        PasswordEntry x = new PasswordEntry();
+        for (PasswordEntry entry : entries){
+            if (entry.getId().equals(uuid)){
+                x = entry;
+            }
+        }
+        return x;
+    }
+
     //public void setEntries(List<PasswordEntry> entries) {
       //  this.entries = entries;
     //}

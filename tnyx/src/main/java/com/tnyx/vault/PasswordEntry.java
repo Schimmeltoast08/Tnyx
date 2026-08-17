@@ -3,6 +3,7 @@ package com.tnyx.vault;
 import java.util.UUID;
 
 public class PasswordEntry {
+
     private String name = "";
     private String username = "";
     private String password = "";
@@ -13,11 +14,9 @@ public class PasswordEntry {
         this.id = UUID.randomUUID();
     }
 
-    public PasswordEntry(UUID id){
+    public PasswordEntry(UUID id) {
         this.id = id;
     }
-
-    
 
     public String getUrl() {
         return url;
@@ -51,13 +50,32 @@ public class PasswordEntry {
         this.name = name;
     }
 
-    public String getPasswordEntryData(){
+    public String getPasswordEntryData() {
         return (this.name + " || " + this.username + " || " + this.password + " || " + this.url + " || " + this.id);
     }
 
-    public UUID getId(){
+    public UUID getId() {
         return this.id;
     }
 
+    public void editEntry(String name, String username, String url, String password) {
+
+        if (!(name.equals(""))) {
+            this.name = name;
+        }
+
+        if (!(username.equals(""))) {
+            this.username = username;
+        }
+
+        if (!(url.equals(""))) {
+            this.url = url;
+        }
+
+        if (!(password.equals(""))) {
+            this.password = password;
+        }
+
+    }
 
 }

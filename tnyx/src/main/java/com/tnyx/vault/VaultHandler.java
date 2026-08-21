@@ -135,6 +135,7 @@ public class VaultHandler {
     }
 
 public static void encryptVault(String filepath, char[] password){
+    public static void encryptVault(String filepath, char[] password){
         //CryptoEngine.encrypt(, password)
         //TODO: FINISH
     }

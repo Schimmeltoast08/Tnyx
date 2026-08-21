@@ -1,5 +1,6 @@
 package com.tnyx.vault;
 
+import com.tnyx.crypto.CryptoEngine;
 import com.tnyx.util.Log;
 import java.io.IOException;
 import java.time.Instant;
@@ -132,6 +133,12 @@ public class VaultHandler {
         scanner.close();
 
     }
+
+public static void encryptVault(String filepath, char[] password){
+        //CryptoEngine.encrypt(, password)
+        //TODO: FINISH
+    }
+
 
 
 

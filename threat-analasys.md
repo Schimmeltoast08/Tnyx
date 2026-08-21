@@ -37,7 +37,7 @@ encryption process{
 }
 Time{
   creation date
-  deletion date
+  last edited date
 }
 encrypted data{
   nonce

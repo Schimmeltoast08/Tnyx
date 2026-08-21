@@ -134,8 +134,11 @@ public class VaultHandler {
 
     }
 
+<<<<<<< Updated upstream
 public static void encryptVault(String filepath, char[] password){
+=======
     public static void encryptVault(String filepath, char[] password){
+>>>>>>> Stashed changes
         //CryptoEngine.encrypt(, password)
         //TODO: FINISH
     }

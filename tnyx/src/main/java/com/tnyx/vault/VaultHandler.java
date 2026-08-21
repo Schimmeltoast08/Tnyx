@@ -134,13 +134,16 @@ public class VaultHandler {
 
     }
 
-<<<<<<< Updated upstream
-public static void encryptVault(String filepath, char[] password){
-=======
-    public static void encryptVault(String filepath, char[] password){
->>>>>>> Stashed changes
-        //CryptoEngine.encrypt(, password)
-        //TODO: FINISH
+    public static void encryptVault(String filepath, char[] password) throws IOException {
+        Vault vault = readVault(filepath);
+        byte[] serializedVault = VaultSerializer.serializeVault(vault);
+        
+        for (byte b : serializedVault){
+            System.out.printf("%02x ", b & 0xFF); //TODO Temporary, security risk
+        }
+
+
+
     }
 
 

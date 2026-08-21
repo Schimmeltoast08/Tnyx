@@ -1,9 +1,10 @@
 package com.tnyx;
 
+import java.io.IOException;
+
 import com.tnyx.util.Log;
 import com.tnyx.vault.Vault;
 import com.tnyx.vault.VaultHandler;
-import java.io.IOException;
 
 
 
@@ -73,6 +74,13 @@ public class Main {
         if (args.length > 0 && args[0].equals("--edit")){
             try{
             VaultHandler.editEntry(args[1]);
+            } catch (Exception e){}
+        }
+
+
+        if (args.length > 0 && args[0].equals("--encrypt")){
+            try{
+            VaultHandler.encryptVault(args[1], new char[2]);
             } catch (Exception e){}
         }
 

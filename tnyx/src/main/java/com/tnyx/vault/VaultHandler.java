@@ -138,9 +138,10 @@ public class VaultHandler {
         Vault vault = readVault(filepath);
         byte[] serializedVault = VaultSerializer.serializeVault(vault);
         
-        for (byte b : serializedVault){
-            System.out.printf("%02x ", b & 0xFF); //TODO Temporary, security risk
-        }
+        CryptoEngine.encrypt(serializedVault, "test".toCharArray());
+
+
+
 
 
 

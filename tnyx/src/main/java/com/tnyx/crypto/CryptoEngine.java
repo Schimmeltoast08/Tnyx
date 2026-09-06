@@ -5,6 +5,9 @@ public class CryptoEngine {
 
     public static byte[] encrypt(byte[] plaintext, char[] password){
 
+            for (byte b : plaintext){
+            System.out.printf("%02x ", b & 0xFF); //TODO Temporary, security risk
+        }
 
 
 

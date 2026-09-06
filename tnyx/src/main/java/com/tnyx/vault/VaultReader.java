@@ -1,11 +1,14 @@
 package com.tnyx.vault;
 
-import com.tnyx.util.Log;
-import com.tnyx.vault.Password.PasswordEntrySerializer;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import com.tnyx.util.Log;
+import com.tnyx.vault.Password.PasswordEntrySerializer;
 
 public class VaultReader {
 
@@ -135,6 +138,10 @@ public class VaultReader {
         }
 
         return vault;
+    }
+
+    public static byte[] readBytes(String filepath) throws IOException {
+        return Files.readAllBytes(Path.of(filepath)); // wtf why so simple? Incredible
     }
 
 }

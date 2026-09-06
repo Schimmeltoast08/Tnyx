@@ -1,7 +1,5 @@
 package com.tnyx.vault;
 
-import com.tnyx.util.Log;
-import com.tnyx.vault.Password.PasswordEntrySerializer;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -12,6 +10,9 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.security.SecureRandom;
 import java.time.Instant;
+
+import com.tnyx.util.Log;
+import com.tnyx.vault.Password.PasswordEntrySerializer;
 
 public class VaultWriter {
 
@@ -86,6 +87,35 @@ public class VaultWriter {
         }
 
     }
+
+public static void writBytes(String vaultpath, byte[] vaultData, boolean atomic) {
+    String outputPath = atomic ? vaultpath + ".tmp" : vaultpath;
+
+    try{
+        FileOutputStream out = new FileOutputStream(outputPath);
+        out.write(vaultData);
+        out.close();
+
+        if (atomic) {
+            Path temp = Path.of(vaultpath + ".tmp");
+            Path target = Path.of(vaultpath);
+
+            try {
+                Files.move(temp, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                String message = "Atomic move is not supported for vault: " + vaultpath;
+                Log.log(message, 4);
+                throw new IOException(message, e);
+            }
+            finally {
+                Files.delete(temp); // clean temp file on atomic crash. 
+            }
+        }
+
+    } catch (Exception e) {
+        Log.log(e.getMessage(), 4);
+    }
+}
 
     public static void createOpenVault(String filepath) throws IOException {
 

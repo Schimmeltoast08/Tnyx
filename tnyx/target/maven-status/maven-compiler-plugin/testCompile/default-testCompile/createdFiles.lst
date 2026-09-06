@@ -1,1 +1,4 @@
 com/tnyx/vault/VaultTest.class
+com/tnyx/vault/VaultSerializerTest.class
+com/tnyx/PasswordEntryTests/PasswordEntrySerializerTest.class
+com/tnyx/PasswordEntryTests/PasswordEntryTest.class

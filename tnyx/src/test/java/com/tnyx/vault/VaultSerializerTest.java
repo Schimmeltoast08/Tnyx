@@ -20,7 +20,7 @@ public class VaultSerializerTest {
         original.setEncryptionAlgorithm("AES/GCM/NoPadding");
         original.setNonce(new byte[]{5, 6, 7, 8});
         original.setCreationTime(123456789L);
-        original.setLastEditedTime(987654321L);
+        original.setLastEditedTime(987654321L); // unix epoch second
         original.setNonce2(new byte[]{9, 10, 11, 12});
 
         byte[] serialized = VaultSerializer.serializeVault(original);

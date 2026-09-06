@@ -1,4 +1,5 @@
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/Main.java
+/home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/crypto/CryptoEngine.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/ui/MainFrame.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/util/Config/Config.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/util/Config/ConfigHandler.java
@@ -10,4 +11,5 @@
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/vault/Vault.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/vault/VaultHandler.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/vault/VaultReader.java
+/home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/vault/VaultSerializer.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/vault/VaultWriter.java

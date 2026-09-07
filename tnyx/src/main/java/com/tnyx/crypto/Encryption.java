@@ -23,20 +23,7 @@ public class Encryption {
         return nonce;
     }
 
-    /*public static void encryptDek() throws NoSuchAlgorithmException, NoSuchPaddingException, GeneralSecurityException {
-    byte[] dekNonce = generateNonce();
-    SecretKey dek = generateDEK();
-    Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
-    //byte[] kek = KeyDerivation.deriveKEK(password, dekNonce)
-
-    GCMParameterSpec spec = new GCMParameterSpec(CryptoConstants.GCM_TAG_LENGTH, dekNonce);
-
-cipher.init(Cipher.ENCRYPT_MODE, kek, spec);
-
-byte[] encryptedDEK = cipher.doFinal(dek.getEncoded());
-}
     
-     */
     public static byte[] encryptGcm(byte[] plaintext, SecretKey key, byte[] nonce) throws GeneralSecurityException {
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         GCMParameterSpec spec = new GCMParameterSpec(CryptoConstants.GCM_TAG_LENGTH, nonce);

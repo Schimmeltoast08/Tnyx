@@ -7,12 +7,13 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import com.tnyx.crypto.EncryptedVault;
 import com.tnyx.util.Log;
 import com.tnyx.vault.Password.PasswordEntrySerializer;
 
 public class VaultReader {
 
-    private static final int VAULT_FORMAT_VERSION = 1;
+    private static final int VAULT_FORMAT_VERSION = 3;
 
     public static Vault readVault(String filepath) throws IOException {
         Vault vault = new Vault();
@@ -143,5 +144,16 @@ public class VaultReader {
     public static byte[] readBytes(String filepath) throws IOException {
         return Files.readAllBytes(Path.of(filepath)); // wtf why so simple? Incredible
     }
+public static EncryptedVault readEncryptedVault(String filepath) throws IOException {
 
+    byte[] encryptedVaultData = readBytes(filepath);
+
+    try {
+        return EncryptedVaultSerializer.deserializeEncryptedVault(encryptedVaultData);
+    } catch (IllegalArgumentException e) {
+        String message = "Could not parse encrypted vault: " + e.getMessage();
+        Log.log(message, 4);
+        throw new IOException(message, e);
+    }
+}
 }

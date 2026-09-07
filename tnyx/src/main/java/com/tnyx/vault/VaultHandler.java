@@ -1,6 +1,7 @@
 package com.tnyx.vault;
 
 import com.tnyx.crypto.CryptoEngine;
+import com.tnyx.crypto.EncryptedVault;
 import com.tnyx.util.Log;
 import java.io.IOException;
 import java.time.Instant;
@@ -134,19 +135,45 @@ public class VaultHandler {
 
     }
 
-    public static void encryptVault(String filepath, char[] password) throws IOException {
-        Vault vault = readVault(filepath);
-        byte[] serializedVault = VaultSerializer.serializeVault(vault);
-        
-        //CryptoEngine.encrypt(serializedVault, "test".toCharArray());
-        //TODO bind to encryption once encryption layer is finished
+public static void encryptVault(String filepath, char[] password) throws IOException {
 
+    Vault vault = VaultReader.readVault(filepath);
 
+    byte[] serializedVault = VaultSerializer.serializeVault(vault);
 
+    try {
+        EncryptedVault encryptedVault = CryptoEngine.encryptVault(serializedVault, password);
 
+        VaultWriter.writeEncryptedVault(filepath, encryptedVault, true);
 
+        Log.log("Vault encrypted successfully", 2);
+
+    } catch (Exception e) {
+        String message = "Could not encrypt vault: " + e.getMessage();
+        Log.log(message, 4);
+        throw new IOException(message, e);
     }
+}
 
+public static Vault decryptVault(String filepath, char[] password) throws IOException {
+
+    EncryptedVault encryptedVault = VaultReader.readEncryptedVault(filepath);
+
+    try {
+        byte[] serializedVault = CryptoEngine.decryptVault(encryptedVault, password);
+
+        Vault vault = VaultSerializer.deserializeVault(serializedVault);
+
+        Log.log("Vault decrypted successfully", 2);
+
+        return vault;
+
+    } catch (Exception e) {
+        String message = "Could not decrypt vault: " + e.getMessage();
+        Log.log(message, 4);
+        throw new IOException(message, e);
+    }
+}
 
 
 

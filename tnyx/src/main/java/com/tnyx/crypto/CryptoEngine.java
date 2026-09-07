@@ -1,35 +1,33 @@
 package com.tnyx.crypto;
 
+import java.security.GeneralSecurityException;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 public class CryptoEngine {
+
+    public static SecretKey deriveKek(char[] password, byte[] salt) {
+        byte[] kekBytes = KeyDerivation.deriveKEK(password, salt);
+        return new SecretKeySpec(kekBytes, "AES");
+    }
+
+    public static byte[] encryptDek(SecretKey dek, SecretKey kek, byte[] dekNonce) throws GeneralSecurityException {
+        return Encryption.encryptGcm(dek.getEncoded(), kek, dekNonce);
+    }
+
+    public static SecretKey decryptDek(byte[] encryptedDek, SecretKey kek, byte[] dekNonce) throws GeneralSecurityException {
+        byte[] dekBytes = Encryption.decryptGcm(encryptedDek, kek, dekNonce);
+        return new SecretKeySpec(dekBytes, "AES");
+    }
+
+    public static byte[] encryptData(byte[] plaintextData, SecretKey dek, byte[] dataNonce) throws GeneralSecurityException {
+        return Encryption.encryptGcm(plaintextData, dek, dataNonce);
+    }
+
+    public static byte[] decryptData(byte[] encryptedData, SecretKey dek, byte[] dataNonce) throws GeneralSecurityException {
+        return Encryption.decryptGcm(encryptedData, dek, dataNonce);
+    }
+
     
-
-    public static byte[] encrypt(byte[] plaintext, char[] password){
-
-            for (byte b : plaintext){
-            System.out.printf("%02x ", b & 0xFF); //TODO Temporary, security risk
-        }
-
-
-
-
-
-        return new byte[1]; // TEMPORARY!!! //TODO: REMOVE BEFORE USE
-    }
-
-
-    public static byte[] decrypt(byte[] encryptedData, char[] password){
-
-
-
-
-
-
-
-
-        
-        return new byte[1]; //TODO: REMOVE BEFORE USE
-    }
-
-
-
 }

@@ -6,10 +6,8 @@ com/tnyx/util/Config/Config.class
 com/tnyx/util/Config/ConfigWriter.class
 com/tnyx/vault/VaultSerializer.class
 com/tnyx/Main.class
-com/tnyx/crypto/CryptoEngine.class
 com/tnyx/vault/Vault.class
 com/tnyx/vault/PasswordEntry.class
 com/tnyx/util/Config/ConfigReader.class
 com/tnyx/vault/VaultReader.class
-com/tnyx/vault/VaultHandler.class
 com/tnyx/vault/VaultWriter.class

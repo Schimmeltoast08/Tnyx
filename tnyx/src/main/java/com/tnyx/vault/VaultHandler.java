@@ -138,8 +138,8 @@ public class VaultHandler {
         Vault vault = readVault(filepath);
         byte[] serializedVault = VaultSerializer.serializeVault(vault);
         
-        CryptoEngine.encrypt(serializedVault, "test".toCharArray());
-
+        //CryptoEngine.encrypt(serializedVault, "test".toCharArray());
+        //TODO bind to encryption once encryption layer is finished
 
 
 

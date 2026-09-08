@@ -97,27 +97,75 @@ public class CryptoEngine {
         );
     }
 
-
     public static EncryptedVault encryptVault(byte[] plaintextData, VaultSession session, byte[] salt, int memoryKib, int iterations, int parallelism, int outputLength, byte[] encryptedDek, byte[] dekNonce) throws GeneralSecurityException {
 
-    byte[] dataNonce = Encryption.generateNonce();
+        byte[] dataNonce = Encryption.generateNonce();
 
-    byte[] encryptedData = encryptData(
-            plaintextData,
-            session.getDek(),
-            dataNonce
-    );
+        byte[] encryptedData = encryptData(
+                plaintextData,
+                session.getDek(),
+                dataNonce
+        );
 
-    return new EncryptedVault(
-            salt,
-            memoryKib,
-            iterations,
-            parallelism,
-            outputLength,
-            dekNonce,
-            encryptedDek,
-            dataNonce,
-            encryptedData
-    );
-}
+        return new EncryptedVault(
+                salt,
+                memoryKib,
+                iterations,
+                parallelism,
+                outputLength,
+                dekNonce,
+                encryptedDek,
+                dataNonce,
+                encryptedData
+        );
+    }
+
+    public static OpenedVaultData encryptNewVault(byte[] plaintextData, char[] password) throws GeneralSecurityException {
+
+        byte[] salt = KeyDerivation.generateSalt();
+
+        SecretKey kek = deriveKek(
+                password,
+                salt,
+                CryptoConstants.ARGON2_MEMORY_KIB,
+                CryptoConstants.ARGON2_ITERATIONS,
+                CryptoConstants.ARGON2_PARALLELISM,
+                CryptoConstants.DEK_LENGTH
+        );
+
+        SecretKey dek = Encryption.generateDEK();
+
+        byte[] dekNonce = Encryption.generateNonce();
+
+        byte[] encryptedDek = encryptDek(
+                dek,
+                kek,
+                dekNonce
+        );
+
+        byte[] dataNonce = Encryption.generateNonce();
+
+        byte[] encryptedData = encryptData(
+                plaintextData,
+                dek,
+                dataNonce
+        );
+
+        EncryptedVault encryptedVault = new EncryptedVault(
+                salt,
+                CryptoConstants.ARGON2_MEMORY_KIB,
+                CryptoConstants.ARGON2_ITERATIONS,
+                CryptoConstants.ARGON2_PARALLELISM,
+                CryptoConstants.DEK_LENGTH,
+                dekNonce,
+                encryptedDek,
+                dataNonce,
+                encryptedData
+        );
+
+        return new OpenedVaultData(
+                encryptedVault,
+                new VaultSession(dek)
+        );
+    }
 }

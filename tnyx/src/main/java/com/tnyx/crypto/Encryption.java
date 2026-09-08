@@ -23,7 +23,6 @@ public class Encryption {
         return nonce;
     }
 
-    
     public static byte[] encryptGcm(byte[] plaintext, SecretKey key, byte[] nonce) throws GeneralSecurityException {
         Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
         GCMParameterSpec spec = new GCMParameterSpec(CryptoConstants.GCM_TAG_LENGTH, nonce);

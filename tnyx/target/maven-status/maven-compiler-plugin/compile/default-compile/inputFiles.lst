@@ -4,6 +4,8 @@
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/crypto/EncryptedVault.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/crypto/Encryption.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/crypto/KeyDerivation.java
+/home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/crypto/OpenedVault.java
+/home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/crypto/OpenedVaultData.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/crypto/VaultSession.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/ui/MainFrame.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/util/Config/Config.java

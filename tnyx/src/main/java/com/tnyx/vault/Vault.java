@@ -100,9 +100,6 @@ public class Vault {
         return x;
     }
 
-    //public void setEntries(List<PasswordEntry> entries) {
-      //  this.entries = entries;
-    //}
 
     public void addEntries(PasswordEntry entry) {
         entries.add(entry);
@@ -134,9 +131,6 @@ public class Vault {
         String nonceString = sb.toString();
         sb.setLength(0);
 
-        /*for (byte b : nonce2){
-            sb.append(b);
-        }*/
         String nonce2String = sb.toString();
 
 // EpochSecond to Human Readable format in Print

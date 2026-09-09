@@ -18,8 +18,8 @@ KDF must be slow or expensive to protect against brute force ex: Argon2id
 build encryption using interfaces for future modularity //strategy pattern
 Avoid Strings, use char[] to later wipe from memory
 Auto-lock after N minutes
-Never overwrite old vault, if crash then vault dead. Instead make new vault and then delete old vault, insert old vault timestamps // atomic replacement
-Encrypt a random 256 bit key (DEK) using Key encryption Key (KEK) --> on Master password change, no need to re-encrypt whole vault, just re-encrypt DEK with new KEK
+Never overwrite old vault, if crash then vault dead. Instead, make new vault and then delete old vault, insert old vault timestamps // atomic replacement
+Encrypt a random 256-bit key (DEK) using Key encryption Key (KEK) --> on Master password change, no need to re-encrypt whole vault, just re-encrypt DEK with new KEK
 Only have nececairy metadata in plain text, encrypt the rest
 
 # Vault design

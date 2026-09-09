@@ -138,8 +138,7 @@ public class VaultWriter {
         random.nextBytes(nonce);
         vault.setNonce(nonce);
 
-        //byte[] dek = new byte[32];
-        //random.nextBytes(dek);
+
         vault.setEncryptionAlgorithm(ENCRYPTION_ALGORITHM);
         vault.setVaultFormatVersion(VAULT_FORMAT_VERSION);
         vault.setKDF(KDF);

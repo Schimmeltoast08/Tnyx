@@ -86,6 +86,7 @@ public class Main {
                     Log.log("Could not aquire console for password entry", 4);
                 }
 
+                assert console != null; // just in case
                 char[] password = console.readPassword("Master password: ");
                 VaultHandler.encryptVault(args[1], password);
                 Log.log("Class Main finished execution of encryption", 1);
@@ -99,6 +100,7 @@ public class Main {
                     Log.log("Could not aquire console for password entry", 4);
                 }
 
+                assert console != null;
                 char[] password = console.readPassword("Master password: ");
                 
                 Vault vault = VaultHandler.decryptVault(args[1], password);

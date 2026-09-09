@@ -60,19 +60,19 @@ public class PasswordEntry {
 
     public void editEntry(String name, String username, String url, String password) {
 
-        if (!(name.equals(""))) {
+        if (!(name.isEmpty())) {
             this.name = name;
         }
 
-        if (!(username.equals(""))) {
+        if (!(username.isEmpty())) {
             this.username = username;
         }
 
-        if (!(url.equals(""))) {
+        if (!(url.isEmpty())) {
             this.url = url;
         }
 
-        if (!(password.equals(""))) {
+        if (!(password.isEmpty())) {
             this.password = password;
         }
 

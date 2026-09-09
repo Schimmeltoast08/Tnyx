@@ -30,22 +30,13 @@ public class Log {
 
     public static void log(String msg, int severity) {
 
-        Level severityLevel = Level.INFO;
-
-        switch (severity) {
-            case 1:
-                severityLevel = Level.FINE; break;
-            case 2:
-                severityLevel = Level.INFO; break;
-            case 3:
-                severityLevel = Level.WARNING; break;
-            case 4:
-                severityLevel = Level.SEVERE; break;
-                
-
-            default:
-                severityLevel = Level.INFO; break;
-        }
+        Level severityLevel = switch (severity) {
+            case 1 -> Level.FINE;
+            case 2 -> Level.INFO;
+            case 3 -> Level.WARNING;
+            case 4 -> Level.SEVERE;
+            default -> Level.INFO;
+        };
 
         LOGGER.log(severityLevel, msg);
 

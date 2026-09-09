@@ -4,16 +4,16 @@ public class Config {
     int configVersion = 1;
     boolean flatlafInstalled = false;
     boolean darkMode = true;
-    boolean rememberLastVault = false; // i want it to be true, but security for when readVault fails ig :/
+    boolean rememberLastVault = false; // I want it to be true, but security for when readVault fails ig :/
     String pathToLastOpenedVault = "";
     int windowX;
     int windowY;
     boolean autoLockEnabeled = true;
     int autoLockTime = 5; // lock after 5 minutes
     boolean lockOnSystemSleep;
-    boolean lockOnScreenLock; // idk if that is even possible
+    boolean lockOnScreenLock; // i do not know if that is even possible
     String backupDirectory;
-    int backupInterval = 7; // if on vault opened vault last backup date greater then 7 days old compared to today, make backup
+    int backupInterval = 7; // if on vault opened vault last backup date greater than 7 days old compared to today, make backup
 
 
 

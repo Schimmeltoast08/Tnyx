@@ -25,7 +25,7 @@ public class PasswordEntrySerializerTest {
     }
 
     @Test
-    void DoubleBarSurvivesSerialization() { // cuz old format used || as a separator of fields rather then length based delimiters
+    void DoubleBarSurvivesSerialization() { // cuz old format used || as a separator of fields rather than length based delimiters
         PasswordEntry original = new PasswordEntry();
         original.setPassword("This is || a test");
         PasswordEntry result = PasswordEntrySerializer.deserializePasswordEntry(PasswordEntrySerializer.serializePasswordEntry(original));

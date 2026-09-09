@@ -35,7 +35,7 @@ public class VaultHandler {
 
         List<PasswordEntry> entries = vault.getEntries();
         //HashMap<int, UUID> map  = new HashMap<int, UUID>();
-        HashMap<Integer, UUID> map = new HashMap<Integer, UUID>();
+        HashMap<Integer, UUID> map = new HashMap<>();
 
         Integer i = 1; // would like it to be 0, but bad UX. Users are not programmers.
         System.out.println("ID  name    username    UUID");
@@ -86,12 +86,12 @@ public class VaultHandler {
     }
 
     public static void editEntry(String filepath) throws IOException {
-        // copy paste from removeEntry
+        // copied and pasted from removeEntry
         Vault vault = VaultReader.readVault(filepath);
 
         List<PasswordEntry> entries = vault.getEntries();
         //HashMap<int, UUID> map  = new HashMap<int, UUID>();
-        HashMap<Integer, UUID> map = new HashMap<Integer, UUID>();
+        HashMap<Integer, UUID> map = new HashMap<>();
 
         Integer i = 1; // would like it to be 0, but bad UX. Users are not programmers.
         System.out.println("ID  name    username    UUID");

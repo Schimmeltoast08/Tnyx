@@ -85,7 +85,7 @@ public class mainEncryptionTest {
         );
 
         assertFalse(
-                Arrays.equals(first.getSalt(), second.getSalt()) // idk why this throws errors when in one line???
+                Arrays.equals(first.getSalt(), second.getSalt()) // i do not know why this throws errors when in one line???
         );
     }
 

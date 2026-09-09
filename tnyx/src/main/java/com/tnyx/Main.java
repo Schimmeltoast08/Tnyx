@@ -1,5 +1,6 @@
 package com.tnyx;
 
+import java.io.Console;
 import java.io.IOException;
 
 import com.tnyx.util.Log;
@@ -80,11 +81,32 @@ public class Main {
 
         if (args.length > 0 && args[0].equals("--encrypt")){
             try{
-            VaultHandler.encryptVault(args[1], new char[2]);
-            } catch (Exception e){}
+                Console console = System.console();
+                if (console == null){
+                    Log.log("Could not aquire console for password entry", 4);
+                }
+
+                char[] password = console.readPassword("Master password: ");
+                VaultHandler.encryptVault(args[1], password);
+                Log.log("Class Main finished execution of encryption", 1);
+            } catch (Exception e){Log.log("Error at encryption: Class Main could not finish", 4);}
         }
 
+        if (args.length > 0 && args[0].equals("--decrypt")){
+            try{
+                Console console = System.console();
+                if (console == null){
+                    Log.log("Could not aquire console for password entry", 4);
+                }
 
+                char[] password = console.readPassword("Master password: ");
+                
+                Vault vault = VaultHandler.decryptVault(args[1], password);
+                vault.printVault();
+
+                Log.log("Class Main finished execution of decryption", 1);
+            } catch (Exception e){Log.log("Error at decryption: Class Main could not finish", 4);}
+        }
 
 
     }

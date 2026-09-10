@@ -7,7 +7,9 @@ import com.tnyx.crypto.KeyDerivation;
 import com.tnyx.crypto.OpenedVault;
 import com.tnyx.crypto.OpenedVaultData;
 import com.tnyx.crypto.VaultSession;
-import com.tnyx.util.Log;
+
+
+import java.io.Console;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.HashMap;
@@ -16,7 +18,9 @@ import java.util.Scanner;
 import java.util.UUID;
 
 import javax.crypto.SecretKey;
-import javax.crypto.spec.PSource;
+
+import static com.tnyx.util.Log.log;
+
 
 public class VaultHandler {
 
@@ -32,8 +36,9 @@ public class VaultHandler {
         List<PasswordEntry> entries = vault.getEntries();
 
         if (entries.isEmpty()){
-            Log.log("Entry password list in vault, nothing to remove", 3);
+            log("Entry password list in vault, nothing to remove", 3);
             System.out.println("There are no password entries in this Vault");
+            return;
         }
 
         HashMap<Integer, UUID> map = new HashMap<>();
@@ -53,8 +58,10 @@ public class VaultHandler {
         UUID choiceUUID = map.get(choice);
 
         vault.removeEntry(choiceUUID);
+
         //VaultWriter.writeVaultAtomic(filepath, vault, true);
         saveVault(filepath, openedVault);
+
         scanner.close();
     }
 
@@ -71,7 +78,6 @@ public class VaultHandler {
         try {
             OpenedVault openedVault = openVault(filepath, masterpassword);
             Vault vault = openedVault.getVault();
-            vault.printVault();
 
             vault.setLastEditedTime(Instant.now().getEpochSecond());
 
@@ -79,9 +85,9 @@ public class VaultHandler {
             //VaultWriter.writeVaultAtomic(filepath, vault, true); //TODO!!!!!!!!!!
             saveVault(filepath, openedVault);
 
-            Log.log("Added new Vault entry", 2);
+            log("Added new Vault entry", 2);
         } catch (IOException e) {
-            Log.log("Could not Open Vault file when adding entry", 4);
+            log("Could not Open Vault file when adding entry", 4);
 
         }
 
@@ -95,53 +101,78 @@ public class VaultHandler {
         Vault vault = openedVault.getVault();
 
         List<PasswordEntry> entries = vault.getEntries();
-        //HashMap<int, UUID> map  = new HashMap<int, UUID>();
         HashMap<Integer, UUID> map = new HashMap<>();
 
         Integer i = 1; // would like it to be 0, but bad UX. Users are not programmers.
-        System.out.println("ID  name    username    UUID");
+        System.out.println("======================================== EDIT ENTRY ========================================");
+
+        // Table header
+        System.out.printf(
+                "%-4s %-25s %-25s %-36s%n",
+                "ID",
+                "Name",
+                "Username",
+                "UUID"
+        );
+
+        System.out.println(
+                "---- ------------------------- ------------------------- ------------------------------------"
+        );
+
         for (PasswordEntry entry : entries) {
-            System.out.println(i + " | " + entry.getName() + " | " + entry.getUsername() + " | " + entry.getId());
+
+            System.out.printf(
+                    "%-4d %-25s %-25s %-36s%n",
+                    i,
+                    entry.getName(),
+                    entry.getUsername(),
+                    entry.getId()
+            );
+
             map.put(i, entry.getId());
             i++;
         }
 
-        System.out.print("choose ID to edit: ");
-        Scanner scanner = new Scanner(System.in);
+        System.out.println(
+                "============================================================================================"
+        );
 
-        int choice = scanner.nextInt();
+        System.out.print("choose ID to edit: ");
+        Console console = System.console();
+
+
+        int choice = Integer.parseInt(console.readLine());
         UUID choiceUUID = map.get(choice);
+
 
         PasswordEntry entry = vault.getEntry(choiceUUID);
 
-        String name = "";
-        String username = "";
-        String url = "";
-        String password = "";
-
-        scanner.nextLine(); // flush buffer, else the newline from int choice gets carried to the name
-
+        System.out.println("");
         System.out.println("Enter nothing if you do not want them changed"); // maby change this away from unix to if (!isNull)
-        System.out.print("name: ");
-        name = scanner.nextLine();
-        System.out.print("username: ");
-        username = scanner.nextLine();
-        System.out.print("url: ");
-        url = scanner.nextLine();
-        System.out.print("password: ");
-        password = scanner.nextLine();
+        String name = console.readLine("Name: ");
+        String username = console.readLine("Username: ");
+        String url = console.readLine("Url: ");
+
+        String password;
+        String password2;
+        do {
+            password = new String(console.readPassword("Password: "));
+            password2 = new String(console.readPassword("Enter Password again: "));
+
+            if (!(password.equals(password2))){
+                System.out.println("Passwords do not match. Please try again");
+            }
+
+        } while (!(password.equals(password2)));
 
         entry.editEntry(name, username, url, password);
-        System.out.println("Entry successfully changed to:"
-                + "\nname: " + entry.getName()
-                + "\nusername: " + entry.getUsername()
-                + "\nurl: " + entry.getUrl()
-                + "\npassword: " + entry.getPassword()
-        );
+        System.out.println("");
+
+        System.out.println("Entry successfully changed to:");
+        entry.printEntry();
 
         //VaultWriter.writeVaultAtomic(filepath, vault, true);
         saveVault(filepath, openedVault);
-        scanner.close();
 
     }
 
@@ -156,11 +187,11 @@ public class VaultHandler {
 
             VaultWriter.writeEncryptedVault(filepath, encryptedVault, true);
 
-            Log.log("Vault encrypted successfully", 2);
+            log("Vault encrypted successfully", 2);
 
         } catch (Exception e) {
             String message = "Could not encrypt vault: " + e.getMessage();
-            Log.log(message, 4);
+            log(message, 4);
             throw new IOException(message, e);
         }
     }
@@ -174,13 +205,13 @@ public class VaultHandler {
 
             Vault vault = VaultSerializer.deserializeVault(serializedVault);
 
-            Log.log("Vault decrypted successfully", 2);
+            log("Vault decrypted successfully", 2);
 
             return vault;
 
         } catch (Exception e) {
             String message = "Could not decrypt vault: " + e.getMessage();
-            Log.log(message, 4);
+            log(message, 4);
             throw new IOException(message, e);
         }
     }
@@ -215,7 +246,7 @@ public class VaultHandler {
                     true
             );
 
-            Log.log("Created encrypted vault successfully", 2);
+            log("Created encrypted vault successfully", 2);
 
             return new OpenedVault(
                     vault,
@@ -225,7 +256,7 @@ public class VaultHandler {
 
         } catch (Exception e) {
             String message = "Could not create encrypted vault: " + e.getMessage();
-            Log.log(message, 4);
+            log(message, 4);
             throw new IOException(message, e);
         }
     }
@@ -260,7 +291,7 @@ public class VaultHandler {
 
             VaultSession session = new VaultSession(dek);
 
-            Log.log("Vault opened successfully", 2);
+            log("Vault opened successfully", 2);
 
             return new OpenedVault(
                     vault,
@@ -270,7 +301,7 @@ public class VaultHandler {
 
         } catch (Exception e) {
             String message = "Could not open vault: " + e.getMessage();
-            Log.log(message, 4);
+            log(message, 4);
             throw new IOException(message, e);
         }
     }
@@ -306,11 +337,11 @@ public class VaultHandler {
 
             openedVault.setEncryptedVault(newEncryptedVault);
 
-            Log.log("Vault saved successfully", 2);
+            log("Vault saved successfully", 2);
 
         } catch (Exception e) {
             String message = "Could not save vault: " + e.getMessage();
-            Log.log(message, 4);
+            log(message, 4);
             throw new IOException(message, e);
         }
     }

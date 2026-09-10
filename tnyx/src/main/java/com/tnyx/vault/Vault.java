@@ -91,13 +91,15 @@ public class Vault {
     }
 
     public PasswordEntry getEntry(UUID uuid){
-        PasswordEntry x = new PasswordEntry();
+
         for (PasswordEntry entry : entries){
             if (entry.getId().equals(uuid)){
-                x = entry;
+                return entry;
             }
         }
-        return x;
+
+        Log.log("No entry found with UUID " + uuid, 3);
+        throw new IllegalArgumentException("No entry found with UUID " + uuid);
     }
 
 
@@ -145,20 +147,59 @@ public class Vault {
         String humanReadableLastEditedTime = lastEditedZonedDateTime.format(formatter);
 //
 
-        System.out.println(
-                this.vaultFormatVersion + " "
-                + this.KDF + " "
-                + saltString + " "
-                + this.encryptionAlgorithm + " "
-                + nonceString + " "
-                + "created: " + humanReadableCreationTime + " | "
-                + "last edited: " + humanReadableLastEditedTime + " "
-                + nonce2String
-                + "\nName     Username  Password          URL                     UUID"
+        System.out.println("======================================== VAULT ========================================");
+        System.out.printf("Format Version : %-10d%n", vaultFormatVersion);
+        System.out.printf("KDF            : %-10s%n", KDF);
+        System.out.printf("Salt           : %-10s%n", saltString);
+        System.out.printf("Encryption     : %-10s%n", encryptionAlgorithm);
+        System.out.printf("Nonce          : %-10s%n", nonceString);
+        System.out.printf("Nonce 2        : %-10s%n", nonce2String);
+        System.out.printf("Created        : %-10s%n", humanReadableCreationTime);
+        System.out.printf("Last Edited    : %-10s%n", humanReadableLastEditedTime);
+
+        System.out.println();
+        System.out.println("======================================= ENTRIES =======================================");
+
+        // Table header
+        System.out.printf(
+                "%-4s %-25s %-25s %-25s %-35s%n",
+                "ID",
+                "Name",
+                "Username",
+                "Password",
+                "URL"
         );
-        for (PasswordEntry n : entries) {
-            System.out.println(n.getPasswordEntryData());
+
+        System.out.println(
+                "---- ------------------------- ------------------------- ------------------------- -----------------------------------"
+        );
+
+        // Entries
+        int id = 1;
+
+        for (PasswordEntry entry : entries) {
+
+            int pwlength = entry.getPassword().length();
+            StringBuilder pwb = new StringBuilder();
+            pwb.append("*".repeat(pwlength));
+
+
+            System.out.printf(
+                    "%-4d %-25s %-25s %-25s %-35s%n",
+                    id,
+                    entry.getName(),
+                    entry.getUsername(),
+                    pwb.toString(),
+                    entry.getUrl()
+            );
+
+            id++;
         }
+
+        System.out.println(
+                "========================================================================================"
+        );
+
     }
 
 }

@@ -78,4 +78,16 @@ public class PasswordEntry {
 
     }
 
+    public void printEntry(){
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("*".repeat(this.password.length()));
+
+        System.out.printf("Name           : %-10s%n", this.name);
+        System.out.printf("Username       : %-10s%n", this.username);
+        System.out.printf("Password       : %-10s%n", sb.toString());
+        System.out.printf("Url            : %-10s%n", this.url);
+
+    }
+
 }

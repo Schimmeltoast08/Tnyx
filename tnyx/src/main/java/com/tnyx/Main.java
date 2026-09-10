@@ -2,6 +2,7 @@ package com.tnyx;
 
 import java.io.Console;
 import java.io.IOException;
+import java.util.Arrays;
 
 import com.tnyx.util.Log;
 import com.tnyx.vault.Vault;
@@ -16,13 +17,15 @@ public class Main {
     
 
     public static void main(String[] args) {
-        Log.log("Starting application", 2);
+        Log.log("[x][x][x] Starting application", 2);
         
 
         if (args.length > 0 && args[0].equals("--new")) {
             try {
                 Log.log("Creating new Vault", 2);
-                VaultHandler.createOpenVault(args[1]);
+                char[] password = getPassword();
+                VaultHandler.createEncryptedVault(args[1], password);
+                Arrays.fill(password, '\n');
             } catch (IOException e) {
                 Log.log("Failed to create Vault", 4);
             }
@@ -30,21 +33,33 @@ public class Main {
 
         if (args.length > 0 && args[0].equals("--open")){
             try {
-                Vault vault = VaultHandler.readVault(args[1]);
-                vault.printVault(); // temporary for developement
-                
+                char[] password = getPassword();
+                Vault vault = VaultHandler.decryptVault(args[1], password);
+                vault.printVault(); // temporary for development
+                Arrays.fill(password, '\n');
             } catch (IOException e) {
                 Log.log("General Error at reading vault", 4);
             }
         }
 
         if (args.length > 0 && args[0].equals("--add")){
-            String filepath = "";
-            String name = "";
-            String username = "";
-            String password = "";
-            String url = "";
+            //String filepath = "";
+            //String name = "";
+            //String username = "";
+            //String password = "";
+            //String url = "";
 
+            Console console = System.console();
+
+            String filepath = console.readLine("Filepath: ");
+            char[] masterPW = console.readPassword("Vault Master Password: ");
+            String name = console.readLine("Entry name: ");
+            String username = console.readLine("Username: ");
+            char[] pw = console.readPassword("Password: ");
+            String password = new String(pw); // IMMUTABLE! FIX
+            String url = console.readLine("Url: ");
+
+            /*
             try {
                 filepath = args[1];
             } catch (Exception e) {}
@@ -61,58 +76,40 @@ public class Main {
                 url = args[5];  // now url is optional, so are they all from right to left as seen down below at addVaultEntry
             } catch (Exception e) {}
 
+             */
 
 
-            VaultHandler.addVaultEntry(filepath, name, username, password, url);
+            VaultHandler.addVaultEntry(filepath, name, username, password, url, masterPW);
         }
 
         if (args.length > 0 && args[0].equals("--remove")){
             try{
-                VaultHandler.removeEntry(args[1]);
-            } catch (IOException e){}
+                char[] password = getPassword();
+                VaultHandler.removeEntry(args[1], password);
+                Arrays.fill(password, '\n');
+            } catch (IOException e){Log.log("Could not remove Password entry", 3);}
         }
 
         if (args.length > 0 && args[0].equals("--edit")){
             try{
-            VaultHandler.editEntry(args[1]);
+            VaultHandler.editEntry(args[1], getPassword());
             } catch (Exception e){}
-        }
-
-
-        if (args.length > 0 && args[0].equals("--encrypt")){
-            try{
-                Console console = System.console();
-                if (console == null){
-                    Log.log("Could not aquire console for password entry", 4);
-                }
-
-                assert console != null; // just in case
-                char[] password = console.readPassword("Master password: ");
-                VaultHandler.encryptVault(args[1], password);
-                Log.log("Class Main finished execution of encryption", 1);
-            } catch (Exception e){Log.log("Error at encryption: Class Main could not finish", 4);}
-        }
-
-        if (args.length > 0 && args[0].equals("--decrypt")){
-            try{
-                Console console = System.console();
-                if (console == null){
-                    Log.log("Could not aquire console for password entry", 4);
-                }
-
-                assert console != null;
-                char[] password = console.readPassword("Master password: ");
-                
-                Vault vault = VaultHandler.decryptVault(args[1], password);
-                vault.printVault();
-
-                Log.log("Class Main finished execution of decryption", 1);
-            } catch (Exception e){Log.log("Error at decryption: Class Main could not finish", 4);}
         }
 
 
     }
 
+    private static char[] getPassword() {
+        Console console = System.console();
+
+        if (console == null){
+            Log.log("Could not acquire console for password entry", 4);
+        }
+
+        char[] password = console.readPassword("Master password: ");
+        assert password != null; // just in case
+        return password;
+    }
 
 
 }

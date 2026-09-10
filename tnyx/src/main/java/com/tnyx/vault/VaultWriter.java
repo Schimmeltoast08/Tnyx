@@ -124,34 +124,4 @@ public class VaultWriter {
         writeBytes(filepath, encryptedVaultData, atomic);
     }
 
-    public static void createOpenVault(String filepath) throws IOException {
-
-        Vault vault = new Vault();
-
-        SecureRandom random = new SecureRandom();
-        //temporary
-        byte[] salt = new byte[16];
-        random.nextBytes(salt);
-        vault.setSalt(salt);
-
-        byte[] nonce = new byte[12];
-        random.nextBytes(nonce);
-        vault.setNonce(nonce);
-
-
-        vault.setEncryptionAlgorithm(ENCRYPTION_ALGORITHM);
-        vault.setVaultFormatVersion(VAULT_FORMAT_VERSION);
-        vault.setKDF(KDF);
-        vault.setCreationTime(Instant.now().getEpochSecond());
-        vault.setLastEditedTime(Instant.now().getEpochSecond());
-
-        byte[] nonce2 = new byte[12];
-        random.nextBytes(nonce2);
-        vault.setNonce2(nonce2);
-
-        VaultWriter.writeVaultAtomic(filepath, vault, false);
-        Log.log("Created new empty Vault", 2);
-
-    }
-
 }

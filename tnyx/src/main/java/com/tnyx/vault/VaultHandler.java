@@ -16,25 +16,26 @@ import java.util.Scanner;
 import java.util.UUID;
 
 import javax.crypto.SecretKey;
+import javax.crypto.spec.PSource;
 
 public class VaultHandler {
 
-    @SuppressWarnings("unused")
-    private static final int TNYX_MAIN_VERSION = 1;
 
-    public static void createOpenVault(String filepath) throws IOException {
-        VaultWriter.createOpenVault(filepath);
-    }
 
-    public static Vault readVault(String filepath) throws IOException {
-        return VaultReader.readVault(filepath);
-    }
 
-    public static void removeEntry(String filepath) throws IOException {
-        Vault vault = VaultReader.readVault(filepath);
 
+    public static void removeEntry(String filepath, char[] password) throws IOException {
+        OpenedVault openedVault = openVault(filepath, password);
+        Vault vault = openedVault.getVault();
+
+        //Vault vault = openVault(filepath, password).getVault();
         List<PasswordEntry> entries = vault.getEntries();
-        //HashMap<int, UUID> map  = new HashMap<int, UUID>();
+
+        if (entries.isEmpty()){
+            Log.log("Entry password list in vault, nothing to remove", 3);
+            System.out.println("There are no password entries in this Vault");
+        }
+
         HashMap<Integer, UUID> map = new HashMap<>();
 
         Integer i = 1; // would like it to be 0, but bad UX. Users are not programmers.
@@ -52,15 +53,13 @@ public class VaultHandler {
         UUID choiceUUID = map.get(choice);
 
         vault.removeEntry(choiceUUID);
-        VaultWriter.writeVaultAtomic(filepath, vault, true);
+        //VaultWriter.writeVaultAtomic(filepath, vault, true);
+        saveVault(filepath, openedVault);
         scanner.close();
     }
 
-    public static void writeVaultAtomic(String filepath, Vault vault, Boolean atomic) throws IOException {
-        VaultWriter.writeVaultAtomic(filepath, vault, atomic);
-    }
 
-    public static void addVaultEntry(String filepath, String name, String username, String password, String url) {
+    public static void addVaultEntry(String filepath, String name, String username, String password, String url, char[] masterpassword) {
 
         PasswordEntry pw = new PasswordEntry();
 
@@ -70,12 +69,15 @@ public class VaultHandler {
         pw.setUsername(username);
 
         try {
-            Vault vault = VaultReader.readVault(filepath);
+            OpenedVault openedVault = openVault(filepath, masterpassword);
+            Vault vault = openedVault.getVault();
+            vault.printVault();
 
             vault.setLastEditedTime(Instant.now().getEpochSecond());
 
             vault.addEntries(pw);
-            VaultWriter.writeVaultAtomic(filepath, vault, true);
+            //VaultWriter.writeVaultAtomic(filepath, vault, true); //TODO!!!!!!!!!!
+            saveVault(filepath, openedVault);
 
             Log.log("Added new Vault entry", 2);
         } catch (IOException e) {
@@ -85,9 +87,12 @@ public class VaultHandler {
 
     }
 
-    public static void editEntry(String filepath) throws IOException {
+    public static void editEntry(String filepath, char[] masterpassword) throws IOException {
         // copied and pasted from removeEntry
-        Vault vault = VaultReader.readVault(filepath);
+        //Vault vault = VaultReader.readVault(filepath);
+
+        OpenedVault openedVault = openVault(filepath, masterpassword);
+        Vault vault = openedVault.getVault();
 
         List<PasswordEntry> entries = vault.getEntries();
         //HashMap<int, UUID> map  = new HashMap<int, UUID>();
@@ -134,7 +139,8 @@ public class VaultHandler {
                 + "\npassword: " + entry.getPassword()
         );
 
-        VaultWriter.writeVaultAtomic(filepath, vault, true);
+        //VaultWriter.writeVaultAtomic(filepath, vault, true);
+        saveVault(filepath, openedVault);
         scanner.close();
 
     }
@@ -308,5 +314,6 @@ public class VaultHandler {
             throw new IOException(message, e);
         }
     }
+
 
 }

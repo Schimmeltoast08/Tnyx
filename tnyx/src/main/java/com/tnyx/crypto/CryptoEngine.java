@@ -37,6 +37,7 @@ public class CryptoEngine {
         return Encryption.decryptGcm(encryptedData, dek, dataNonce);
     }
 
+
     public static EncryptedVault encryptVault(byte[] plaintextData, char[] password) throws GeneralSecurityException {
 
         byte[] salt = KeyDerivation.generateSalt();

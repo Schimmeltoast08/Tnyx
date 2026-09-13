@@ -2,6 +2,7 @@ package com.tnyx;
 
 import java.io.Console;
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.Arrays;
 
 import com.tnyx.util.Log;
@@ -41,6 +42,8 @@ public class Main {
                 Arrays.fill(password, '\n');
             } catch (IOException e) {
                 log("General Error at reading vault", 4);
+                System.out.println("Error at reading vault. Possibly wrong password or corrupted vault.");
+
             }
         }
 

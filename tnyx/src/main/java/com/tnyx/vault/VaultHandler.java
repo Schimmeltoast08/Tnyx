@@ -94,8 +94,6 @@ public class VaultHandler {
     }
 
     public static void editEntry(String filepath, char[] masterpassword) throws IOException {
-        // copied and pasted from removeEntry
-        //Vault vault = VaultReader.readVault(filepath);
 
         OpenedVault openedVault = openVault(filepath, masterpassword);
         Vault vault = openedVault.getVault();
@@ -108,7 +106,7 @@ public class VaultHandler {
 
         // Table header
         System.out.printf(
-                "%-4s %-25s %-25s %-36s%n",
+                "%-4s %-25s %-25s %-36s%n", // disclosure: this printf call was beautified by Ai. I wrote it, it looked like shit and asked Ai to format it.
                 "ID",
                 "Name",
                 "Username",

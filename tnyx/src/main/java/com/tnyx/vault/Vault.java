@@ -147,6 +147,7 @@ public class Vault {
         String humanReadableLastEditedTime = lastEditedZonedDateTime.format(formatter);
 //
 
+        // full disclosure: From here up to the "[Ai]" are generated using ChatGPT. I did it all myself, chat did the pretty formatting, nothing more, nothing less.
         System.out.println("======================================== VAULT ========================================");
         System.out.printf("Format Version : %-10d%n", vaultFormatVersion);
         System.out.printf("KDF            : %-10s%n", KDF);
@@ -185,7 +186,7 @@ public class Vault {
 
 
             System.out.printf(
-                    "%-4d %-25s %-25s %-25s %-35s%n",
+                    "%-4d %-25s %-25s %-25s %-35s%n", // [Ai]
                     id,
                     entry.getName(),
                     entry.getUsername(),

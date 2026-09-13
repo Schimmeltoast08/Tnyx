@@ -110,7 +110,7 @@ public class mainEncryptionTest {
         entry.setPassword("secret");
         entry.setUrl("https://example.com");
 
-        vault.addEntries(entry);
+        vault.addEntry(entry);
 
         byte[] serialized = VaultSerializer.serializeVault(vault);
 

@@ -103,7 +103,7 @@ public class Vault {
     }
 
 
-    public void addEntries(PasswordEntry entry) {
+    public void addEntry(PasswordEntry entry) {
         entries.add(entry);
     }
 

@@ -114,7 +114,7 @@ public class VaultReader {
                 dataIn.readFully(entryBytes);
 
                 PasswordEntry entry = PasswordEntrySerializer.deserializePasswordEntry(entryBytes);
-                vault.addEntries(entry);
+                vault.addEntry(entry);
 
                 if (entryLength <= 0) {
                     Log.log("Entry length smaller then zero (0), corrupted format", 4);

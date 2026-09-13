@@ -13,7 +13,7 @@ public class VaultTest {
         Vault vault = new Vault();
         PasswordEntry entry = new PasswordEntry();
 
-        vault.addEntries(entry);
+        vault.addEntry(entry);
 
         assertEquals(1, vault.getEntries().size());
         assertEquals(entry, vault.getEntries().get(0));
@@ -26,8 +26,8 @@ public class VaultTest {
         PasswordEntry first = new PasswordEntry();
         PasswordEntry second = new PasswordEntry();
 
-        vault.addEntries(first);
-        vault.addEntries(second);
+        vault.addEntry(first);
+        vault.addEntry(second);
 
         assertSame(second, vault.getEntry(second.getId()));
     }
@@ -39,8 +39,8 @@ void removeEntryRemovesCorrectEntry() {
     PasswordEntry first = new PasswordEntry();
     PasswordEntry second = new PasswordEntry();
 
-    vault.addEntries(first);
-    vault.addEntries(second);
+    vault.addEntry(first);
+    vault.addEntry(second);
 
     vault.removeEntry(first.getId());
 

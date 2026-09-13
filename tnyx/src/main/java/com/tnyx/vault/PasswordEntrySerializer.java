@@ -1,7 +1,7 @@
-package com.tnyx.vault.Password;
+package com.tnyx.vault;
 
 import com.tnyx.util.Log;
-import com.tnyx.vault.PasswordEntry;
+
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;

@@ -174,25 +174,6 @@ public class VaultHandler {
 
     }
 
-    public static void encryptVault(String filepath, char[] password) throws IOException {
-
-        Vault vault = VaultReader.readVault(filepath);
-
-        byte[] serializedVault = VaultSerializer.serializeVault(vault);
-
-        try {
-            EncryptedVault encryptedVault = CryptoEngine.encryptVault(serializedVault, password);
-
-            VaultWriter.writeEncryptedVault(filepath, encryptedVault, true);
-
-            log("Vault encrypted successfully", 2);
-
-        } catch (Exception e) {
-            String message = "Could not encrypt vault: " + e.getMessage();
-            log(message, 4);
-            throw new IOException(message, e);
-        }
-    }
 
     public static Vault decryptVault(String filepath, char[] password) throws IOException {
 

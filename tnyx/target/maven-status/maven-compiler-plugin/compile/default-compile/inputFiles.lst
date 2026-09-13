@@ -14,8 +14,8 @@
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/util/Config/ConfigWriter.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/util/Log.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/vault/EncryptedVaultSerializer.java
-/home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/vault/Password/PasswordEntrySerializer.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/vault/PasswordEntry.java
+/home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/vault/PasswordEntrySerializer.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/vault/Vault.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/vault/VaultHandler.java
 /home/toasti/Documents/GitHub/Tnyx/tnyx/src/main/java/com/tnyx/vault/VaultReader.java

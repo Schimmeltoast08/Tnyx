@@ -9,7 +9,6 @@ import java.nio.file.Path;
 
 import com.tnyx.crypto.EncryptedVault;
 import com.tnyx.util.Log;
-import com.tnyx.vault.Password.PasswordEntrySerializer;
 
 public class VaultReader {
 

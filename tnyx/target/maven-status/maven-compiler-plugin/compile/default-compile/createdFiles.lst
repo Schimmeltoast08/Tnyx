@@ -1,6 +1,5 @@
 com/tnyx/util/Log$1.class
 com/tnyx/crypto/OpenedVaultData.class
-com/tnyx/vault/Password/PasswordEntrySerializer.class
 com/tnyx/util/Log.class
 com/tnyx/util/Config/ConfigHandler.class
 com/tnyx/util/Config/Config.class
@@ -16,6 +15,7 @@ com/tnyx/vault/PasswordEntry.class
 com/tnyx/vault/EncryptedVaultSerializer.class
 com/tnyx/util/Config/ConfigReader.class
 com/tnyx/vault/VaultReader.class
+com/tnyx/vault/PasswordEntrySerializer.class
 com/tnyx/crypto/CryptoConstants.class
 com/tnyx/vault/VaultHandler.class
 com/tnyx/crypto/EncryptedVault.class

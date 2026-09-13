@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.tnyx.util.Log;
-import com.tnyx.vault.Password.PasswordEntrySerializer;
 
 public class VaultSerializer {
 

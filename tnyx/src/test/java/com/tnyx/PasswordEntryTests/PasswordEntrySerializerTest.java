@@ -1,6 +1,6 @@
 package com.tnyx.PasswordEntryTests;
 
-import com.tnyx.vault.Password.PasswordEntrySerializer;
+import com.tnyx.vault.PasswordEntrySerializer;
 import com.tnyx.vault.PasswordEntry;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;

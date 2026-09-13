@@ -2,10 +2,8 @@ package com.tnyx;
 
 import java.io.Console;
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.util.Arrays;
 
-import com.tnyx.util.Log;
 import com.tnyx.vault.Vault;
 import com.tnyx.vault.VaultHandler;
 
@@ -22,73 +20,78 @@ public class Main {
     public static void main(String[] args) {
         log("[x][x][x] Starting application", 2);
         
-
-        if (args.length > 0 && args[0].equals("--new")) {
-            try {
-                log("Creating new Vault", 2);
-                char[] password = getPassword();
-                VaultHandler.createEncryptedVault(args[1], password);
-                Arrays.fill(password, '\n');
-            } catch (IOException e) {
-                log("Failed to create Vault", 4);
-            }
-        }
-
-        if (args.length > 0 && args[0].equals("--open")){
-            try {
-                char[] password = getPassword();
-                Vault vault = VaultHandler.decryptVault(args[1], password);
-                vault.printVault(); // temporary for development
-                Arrays.fill(password, '\n');
-            } catch (IOException e) {
-                log("General Error at reading vault", 4);
-                System.out.println("Error at reading vault. Possibly wrong password or corrupted vault.");
-
-            }
-        }
-
-        if (args.length > 0 && args[0].equals("--add")){
-            //String filepath = "";
-            //String name = "";
-            //String username = "";
-            //String password = "";
-            //String url = "";
-
-            Console console = System.console();
-
-            String filepath;
-            if (args.length > 1) {
-                filepath = args[1];
-            } else {
-                filepath = console.readLine("Filepath: ");
-            }
-
-            char[] masterPW = console.readPassword("Vault Master Password: ");
-            String name = console.readLine("Entry name: ");
-            String username = console.readLine("Username: ");
-            char[] pw = console.readPassword("Password: ");
-            String password = new String(pw); // IMMUTABLE! FIX
-            String url = console.readLine("Url: ");
-
-
-            VaultHandler.addVaultEntry(filepath, name, username, password, url, masterPW);
-        }
-
-        if (args.length > 0 && args[0].equals("--remove")){
-            try{
-                char[] password = getPassword();
-                VaultHandler.removeEntry(args[1], password);
-                Arrays.fill(password, '\n');
-            } catch (IOException e){log("Could not remove Password entry", 3);}
-        }
-
-        if (args.length > 0 && args[0].equals("--edit")){
-            try{
-            VaultHandler.editEntry(args[1], getPassword());
-            } catch (Exception e){}
+    if (args.length > 0){
+        switch (args[0]){
+            case "--new" -> newVault(args);
+            case "--edit" -> edit(args);
+            case "--remove" -> remove(args);
+            case "--add" -> add(args);
+            case "--open" -> open(args);
         }
 
 
+    }
+
+
+    }
+
+    private static void edit(String[] args) {
+        try{
+        VaultHandler.editEntry(args[1], getPassword());
+        } catch (Exception e){}
+    }
+
+    private static void remove(String[] args) {
+        try{
+            char[] password = getPassword();
+            VaultHandler.removeEntry(args[1], password);
+            Arrays.fill(password, '\n');
+        } catch (IOException e){log("Could not remove Password entry", 3);}
+    }
+
+    private static void add(String[] args) {
+        Console console = System.console();
+
+        String filepath;
+        if (args.length > 1) {
+            filepath = args[1];
+        } else {
+            filepath = console.readLine("Filepath: ");
+        }
+
+        char[] masterPW = console.readPassword("Vault Master Password: ");
+        String name = console.readLine("Entry name: ");
+        String username = console.readLine("Username: ");
+        char[] pw = console.readPassword("Password: ");
+        String password = new String(pw); // IMMUTABLE! FIX
+        String url = console.readLine("Url: ");
+
+
+        VaultHandler.addVaultEntry(filepath, name, username, password, url, masterPW);
+    }
+
+    private static void open(String[] args) {
+        try {
+            char[] password = getPassword();
+            Vault vault = VaultHandler.decryptVault(args[1], password);
+            vault.printVault(); // temporary for development
+            Arrays.fill(password, '\n');
+        } catch (IOException e) {
+            log("General Error at reading vault", 4);
+            System.out.println("Error at reading vault. Possibly wrong password or corrupted vault.");
+
+        }
+    }
+
+    private static void newVault(String[] args) {
+        try {
+            log("Creating new Vault", 2);
+            char[] password = getPassword();
+            VaultHandler.createEncryptedVault(args[1], password);
+            Arrays.fill(password, '\n');
+        } catch (IOException e) {
+            log("Failed to create Vault", 4);
+        }
     }
 
     private static char[] getPassword() {

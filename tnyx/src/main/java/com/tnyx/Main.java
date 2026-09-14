@@ -130,5 +130,9 @@ public class Main {
 
     }
 
+    public static void exitApplication(int code){
+        System.exit(code);
+    }
+
 
 }

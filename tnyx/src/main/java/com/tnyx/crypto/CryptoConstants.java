@@ -1,6 +1,6 @@
 package com.tnyx.crypto;
 
-public final class CryptoConstants { // just to keep everything in one place to avoid a missmatch in code
+public final class CryptoConstants { // just to keep everything in one place to avoid a mismatch in code
 
     public static final int SALT_LENGTH = 16;
     public static final int DEK_LENGTH = 32;

@@ -83,7 +83,7 @@ public class VaultReader {
             }
 
             long creationTime = dataIn.readLong();
-            long lastModifiedTime = dataIn.readLong();
+            long lastEditedTime = dataIn.readLong();
 
             byte[] dataMagic = new byte["[Data]".getBytes().length];
             dataIn.readFully(dataMagic);
@@ -129,7 +129,7 @@ public class VaultReader {
             vault.setEncryptionAlgorithm(encryptionAlgorithm);
             vault.setNonce(nonceBytes);
             vault.setCreationTime(creationTime);
-            vault.setLastEditedTime(lastModifiedTime);
+            vault.setLastEditedTime(lastEditedTime);
             vault.setNonce2(nonce2Bytes);
 
         } catch (Exception e) {

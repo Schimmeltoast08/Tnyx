@@ -82,7 +82,6 @@ public class VaultHandler {
             vault.setLastEditedTime(Instant.now().getEpochSecond());
 
             vault.addEntry(pw);
-            //VaultWriter.writeVaultAtomic(filepath, vault, true); //TODO!!!!!!!!!!
             saveVault(filepath, openedVault);
 
             log("Added new Vault entry", 2);

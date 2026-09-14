@@ -4,9 +4,13 @@ import java.io.Console;
 import java.io.IOException;
 import java.util.Arrays;
 
+import com.tnyx.ui.ThemeManager;
+import com.tnyx.ui.UiManager;
 import com.tnyx.vault.Vault;
 import com.tnyx.vault.VaultHandler;
 
+
+import javax.swing.*;
 
 import static com.tnyx.util.Log.log;
 
@@ -27,7 +31,10 @@ public class Main {
             case "--remove" -> remove(args);
             case "--add" -> add(args);
             case "--open" -> open(args);
+            case "--gui" -> gui(args);
+            default -> gui(args);
         }
+
 
 
     }
@@ -104,6 +111,23 @@ public class Main {
         char[] password = console.readPassword("Master password: ");
         assert password != null; // just in case
         return password;
+    }
+
+    private static void gui(String[] args){
+
+        SwingUtilities.invokeLater(() -> {
+
+            try {
+                ThemeManager.setDark();
+            } catch (Exception e) {
+                log("Could not set theme to dark", 3);
+            }
+
+            new UiManager();
+            //uiManager.showLockScreen();
+
+    });
+
     }
 
 

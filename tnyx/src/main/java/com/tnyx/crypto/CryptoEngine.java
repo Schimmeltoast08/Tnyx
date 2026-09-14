@@ -8,13 +8,13 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class CryptoEngine {
 
-    public static SecretKey deriveKek(char[] password, byte[] salt) {
-        byte[] kekBytes = KeyDerivation.deriveKEK(password, salt);
+    public static SecretKey deriveKek(char[] masterPW, byte[] salt) {
+        byte[] kekBytes = KeyDerivation.deriveKEK(masterPW, salt);
         return new SecretKeySpec(kekBytes, "AES");
     }
 
-    public static SecretKey deriveKek(char[] password, byte[] salt, int memoryKib, int iterations, int parallelism, int outputLength) {
-        byte[] kekBytes = KeyDerivation.deriveKEK(password, salt, memoryKib, iterations, parallelism, outputLength);
+    public static SecretKey deriveKek(char[] masterPW, byte[] salt, int memoryKib, int iterations, int parallelism, int outputLength) {
+        byte[] kekBytes = KeyDerivation.deriveKEK(masterPW, salt, memoryKib, iterations, parallelism, outputLength);
         return new SecretKeySpec(kekBytes, "AES");
     }
 
@@ -38,12 +38,12 @@ public class CryptoEngine {
     }
 
 
-    public static EncryptedVault encryptVault(byte[] plaintextData, char[] password) throws GeneralSecurityException {
+    public static EncryptedVault encryptVault(byte[] plaintextData, char[] masterPW) throws GeneralSecurityException {
 
         byte[] salt = KeyDerivation.generateSalt();
 
         SecretKey kek = deriveKek(
-                password,
+                masterPW,
                 salt,
                 CryptoConstants.ARGON2_MEMORY_KIB,
                 CryptoConstants.ARGON2_ITERATIONS,
@@ -74,10 +74,10 @@ public class CryptoEngine {
         );
     }
 
-    public static byte[] decryptVault(EncryptedVault encryptedVault, char[] password) throws GeneralSecurityException {
+    public static byte[] decryptVault(EncryptedVault encryptedVault, char[] masterPW) throws GeneralSecurityException {
 
         SecretKey kek = deriveKek(
-                password,
+                masterPW,
                 encryptedVault.getSalt(),
                 encryptedVault.getArgon2MemoryKib(),
                 encryptedVault.getArgon2Iterations(),
@@ -121,12 +121,12 @@ public class CryptoEngine {
         );
     }
 
-    public static OpenedVaultData encryptNewVault(byte[] plaintextData, char[] password) throws GeneralSecurityException {
+    public static OpenedVaultData encryptNewVault(byte[] plaintextData, char[] masterPW) throws GeneralSecurityException {
 
         byte[] salt = KeyDerivation.generateSalt();
 
         SecretKey kek = deriveKek(
-                password,
+                masterPW,
                 salt,
                 CryptoConstants.ARGON2_MEMORY_KIB,
                 CryptoConstants.ARGON2_ITERATIONS,

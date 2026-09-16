@@ -1,5 +1,7 @@
 package com.tnyx.ui;
 
+import com.tnyx.crypto.OpenedVault;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -9,7 +11,7 @@ import static com.tnyx.util.Log.log;
 
 public class MainFrame extends JFrame implements ActionListener {
 
-
+    private OpenedVault openedVault;
 
     public MainFrame(){
         log("Created new MainFrame", 2);
@@ -32,5 +34,9 @@ public class MainFrame extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
 
+    }
+
+    public void setOpenedVault(OpenedVault openedVault) {
+        this.openedVault = openedVault;
     }
 }

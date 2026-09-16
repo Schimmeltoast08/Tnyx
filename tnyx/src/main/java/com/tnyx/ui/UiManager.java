@@ -1,25 +1,43 @@
 package com.tnyx.ui;
 
 
-    public class UiManager {
+import com.tnyx.Main;
+import com.tnyx.crypto.OpenedVault;
+import com.tnyx.vault.Vault;
 
-        private final MainFrame mainFrame;
-        private final LockFrame lockFrame;
+public class UiManager {
+
+        private static final MainFrame mainFrame = new MainFrame();
+        private static final LockFrame lockFrame = new LockFrame();
+
+        private static OpenedVault openedVault;
 
         public UiManager() {
-            mainFrame = new MainFrame();
-            lockFrame = new LockFrame();
             showLockScreen();
         }
 
-        public void showLockScreen() {
+        public static void showLockScreen() {
             mainFrame.setVisible(false);
             lockFrame.setVisible(true);
         }
 
-        public void showMainScreen() {
+        public static void showMainScreen() {
             lockFrame.setVisible(false);
             mainFrame.setVisible(true);
         }
+
+    public static OpenedVault getOpenedVault() {
+        return openedVault;
     }
+
+    public static void setOpenedVault(OpenedVault opVault) {
+        openedVault = opVault;
+    }
+
+    public static void setMainFrameVault(){
+            mainFrame.setOpenedVault(openedVault);
+    }
+
+
+}
 

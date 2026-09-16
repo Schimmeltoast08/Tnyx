@@ -1,6 +1,8 @@
 package com.tnyx.ui;
 
 import com.tnyx.Main;
+import com.tnyx.crypto.OpenedVault;
+import com.tnyx.vault.VaultHandler;
 
 import javax.swing.*;
 import java.awt.*;
@@ -9,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.File;
+import java.io.IOException;
 
 import static com.tnyx.util.Log.log;
 
@@ -193,6 +196,30 @@ public class LockFrame extends JFrame implements ActionListener {
                 log("User did not enter Password", 3);
                 JOptionPane.showMessageDialog(this, "Please enter a password before submitting");
             }
+
+            char[] password = pwField.getPassword();
+
+            log("Attempting to open vault: " + file.getAbsolutePath(), 1);
+
+            // Pass these to your vault/decryption code
+
+            try {
+                OpenedVault vault = VaultHandler.openVault(file.getAbsolutePath(), password);
+                UiManager.setOpenedVault(vault);
+                UiManager.setMainFrameVault();
+                UiManager.showMainScreen();
+            } catch (IOException ex) {
+                log("could not pass values to VaultHandler.openVault", 4);
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Incorrect password or corrupted vault.",
+                        "Could not open vault",
+                        JOptionPane.ERROR_MESSAGE
+                );
+               
+            }
+
+
         }
 
 

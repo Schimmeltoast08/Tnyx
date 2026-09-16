@@ -22,7 +22,7 @@ public class Main {
     
 
     public static void main(String[] args) {
-        log("[x][x][x] Starting application", 2);
+        log("=== Starting application ===", 2);
         
     if (args.length > 0){
         switch (args[0]){

@@ -121,19 +121,18 @@ public class LockFrame extends JFrame implements ActionListener {
         mainPanel.setPreferredSize(new Dimension(700, 350));
         //mainPanel.setBackground(Color.CYAN);
 
+
         mainPanel.add(entryLabel);
+
         mainPanel.add(Box.createVerticalStrut(20));
         mainPanel.add(fileChooserButton);
+
         mainPanel.add(Box.createVerticalStrut(20));
-        //mainPanel.add(selectedVaultLabel);
         mainPanel.add(selectedVaultPanel);
-
         mainPanel.add(pwField);
-
         mainPanel.add(openButton);
 
-//        mainPanel.add(Box.createVerticalGlue());
-//        mainPanel.add(Box.createVerticalStrut(10));
+
         mainPanel.add(exitButton);
 
 // add stack
@@ -216,7 +215,7 @@ public class LockFrame extends JFrame implements ActionListener {
                         "Could not open vault",
                         JOptionPane.ERROR_MESSAGE
                 );
-               
+
             }
 
 

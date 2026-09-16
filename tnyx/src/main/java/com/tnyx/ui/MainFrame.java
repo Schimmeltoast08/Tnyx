@@ -18,12 +18,23 @@ public class MainFrame extends JFrame implements ActionListener {
 
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setTitle("Tnyx Password manager");
+        this.setLocationRelativeTo(null);
+
+        Font font = new Font("Arial", Font.PLAIN, 20);
 
         Container contentPane = this.getContentPane();
-        FlowLayout layout = new FlowLayout();
-        contentPane.setLayout(layout);
-        contentPane.add(new JLabel("Label"));
-        contentPane.add(new JTextField("Text field", 15));
+        contentPane.setLayout(null); // i hate java swing layouts. They all suck
+        contentPane.setPreferredSize(new Dimension(700, 350));
+
+
+
+
+
+
+
+
+
+
         this.pack();
 
 

@@ -87,6 +87,7 @@ public class VaultHandler {
             log("Added new Vault entry", 2);
         } catch (IOException e) {
             log("Could not Open Vault file when adding entry", 4);
+            //e.printStackTrace();
 
         }
 

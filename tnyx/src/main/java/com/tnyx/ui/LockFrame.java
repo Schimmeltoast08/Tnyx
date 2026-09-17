@@ -231,49 +231,17 @@ public class LockFrame extends JFrame implements ActionListener {
 
 
         if (e.getSource() == openButton){
-            if (!mayProceed){
-                log("User did not select a Vault file", 3);
-                JOptionPane.showMessageDialog(this, "Please select a valid TVault (.tvlt) file before submitting");
-            }
-
-            if (placeholder || pwField.getPassword().length == 0){
-                log("User did not enter Password", 3);
-                JOptionPane.showMessageDialog(this, "Please enter a password before submitting");
-            }
-
-            char[] password = pwField.getPassword();
-
-            log("Attempting to open vault: " + file.getAbsolutePath(), 1);
-
-            // Pass these to your vault/decryption code
-
-            try {
-                OpenedVault vault = VaultHandler.openVault(file.getAbsolutePath(), password);
-                UiManager.setOpenedVault(vault);
-                UiManager.setMainFrameVault();
-                UiManager.showMainScreen();
-                MainFrame.updateEntries();
-            } catch (IOException ex) {
-                log("could not pass values to VaultHandler.openVault", 4);
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Incorrect password or corrupted vault.",
-                        "Could not open vault",
-                        JOptionPane.ERROR_MESSAGE
-                );
-
-            }
-
-
-
+            openVaultGui();
 
 
         }
 
         if (e.getSource() == newVaultButton) {
             try {
+                log("Creating new vault at " + file.getAbsolutePath(), 2);
                 VaultHandler.createEncryptedVault(file.getAbsolutePath(), pwField.getPassword());
-                System.out.println("test " + file.getAbsolutePath() + " " + pwField.getPassword());
+                JOptionPane.showMessageDialog(this, "Successfully created new vault at:\n" + file.getAbsolutePath());
+                openVaultGui();
             } catch (IOException ex) {
                 log("Could not create new Vault from Gui", 3);
 
@@ -289,6 +257,41 @@ public class LockFrame extends JFrame implements ActionListener {
 
 
 
+    }
+
+    private void openVaultGui() {
+        if (!mayProceed){
+            log("User did not select a Vault file", 3);
+            JOptionPane.showMessageDialog(this, "Please select a valid TVault (.tvlt) file before submitting");
+        }
+
+        if (placeholder || pwField.getPassword().length == 0){
+            log("User did not enter Password", 3);
+            JOptionPane.showMessageDialog(this, "Please enter a password before submitting");
+        }
+
+        char[] password = pwField.getPassword();
+
+        log("Attempting to open vault: " + file.getAbsolutePath(), 1);
+
+        // Pass these to your vault/decryption code
+
+        try {
+            OpenedVault vault = VaultHandler.openVault(file.getAbsolutePath(), password);
+            UiManager.setOpenedVault(vault);
+            UiManager.setMainFrameVault();
+            UiManager.showMainScreen();
+            MainFrame.updateEntries();
+        } catch (IOException ex) {
+            log("could not pass values to VaultHandler.openVault", 4);
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Incorrect password or corrupted vault.",
+                    "Could not open vault",
+                    JOptionPane.ERROR_MESSAGE
+            );
+
+        }
     }
 
 }

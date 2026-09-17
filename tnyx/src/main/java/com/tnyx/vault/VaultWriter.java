@@ -38,12 +38,18 @@ public class VaultWriter {
                         StandardCopyOption.REPLACE_EXISTING
                 );
             } catch (AtomicMoveNotSupportedException e) {
-                String message = "Atomic move is not supported for vault: " + vaultpath;
-                Log.log(message, 4);
-                throw new IOException(message, e);
+                Log.log(
+                        "Atomic move not supported, falling back to normal move: " + vaultpath, 3);
+
+                Files.move(
+                        temp,
+                        target,
+                        StandardCopyOption.REPLACE_EXISTING
+                );
+            }
             }
         }
-    }
+
 
     public static void writeEncryptedVault(String filepath, EncryptedVault encryptedVault, boolean atomic) throws IOException {
 
@@ -53,3 +59,4 @@ public class VaultWriter {
     }
 
 }
+

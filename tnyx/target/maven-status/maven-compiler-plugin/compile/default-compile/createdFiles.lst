@@ -3,6 +3,7 @@ com/tnyx/util/Log$1.class
 com/tnyx/crypto/OpenedVaultData.class
 com/tnyx/util/Config/Config.class
 com/tnyx/ui/UiManager.class
+com/tnyx/ui/EntryPanel$1.class
 com/tnyx/util/Config/ConfigWriter.class
 com/tnyx/vault/VaultSerializer.class
 com/tnyx/Main.class
@@ -17,6 +18,7 @@ com/tnyx/ui/LockFrame$1.class
 com/tnyx/util/Log.class
 com/tnyx/util/Config/ConfigHandler.class
 com/tnyx/crypto/OpenedVault.class
+com/tnyx/ui/EntryPanel.class
 com/tnyx/crypto/Encryption.class
 com/tnyx/crypto/CryptoEngine.class
 com/tnyx/crypto/VaultSession.class

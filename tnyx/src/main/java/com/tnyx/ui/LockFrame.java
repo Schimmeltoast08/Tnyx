@@ -2,16 +2,20 @@ package com.tnyx.ui;
 
 import com.tnyx.Main;
 import com.tnyx.crypto.OpenedVault;
+import com.tnyx.vault.PasswordEntry;
 import com.tnyx.vault.VaultHandler;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 import static com.tnyx.util.Log.log;
 
@@ -20,10 +24,12 @@ public class LockFrame extends JFrame implements ActionListener {
     JButton fileChooserButton;
     JButton exitButton;
     JButton openButton;
+    JButton newVaultButton;
 
     JLabel entryLabel;
     JLabel selectedVaultLabel;
     JLabel selectedVaultPathLabel;
+    JLabel piclabel;
 
     JPanel mainPanel;
     JPanel selectedVaultPanel;
@@ -48,7 +54,7 @@ public class LockFrame extends JFrame implements ActionListener {
         contentPane.setLayout(new FlowLayout(FlowLayout.LEADING)); // ik it's bad, but i tested 5 layouts and they all suck ass
 
 
-        entryLabel = new JLabel("Select vault to open");
+        entryLabel = new JLabel("Select vault or Path");
         entryLabel.setFont(font);
         entryLabel.setBounds(5, 20, 300, 30);
 
@@ -105,16 +111,53 @@ public class LockFrame extends JFrame implements ActionListener {
         // so much code for this tiny bs :(
 
 
-        openButton = new JButton("open");
+        openButton = new JButton("Open");
         openButton.setFont(font);
         openButton.setBounds(5, 295, 200, 50);
         openButton.addActionListener(this);
+
+        newVaultButton = new JButton("New");
+        newVaultButton.setFont(font);
+        newVaultButton.setBounds(495, 230, 200, 50);
+        newVaultButton.addActionListener(this);
 
         exitButton = new JButton("Exit");
         //exitButton.setAlignmentX(Component.RIGHT_ALIGNMENT);
         //exitButton.setAlignmentY(Component.BOTTOM_ALIGNMENT);
         exitButton.setBounds(495, 295, 200, 50);
         exitButton.addActionListener(this);
+
+        URL url = LockFrame.class.getResource("/Tnyx-logo-no-background.png");
+
+        if (url != null) {
+            ImageIcon original = new ImageIcon(url);
+
+            int maxWidth = 320;
+            int maxHeight = 80;
+
+            int originalWidth = original.getIconWidth();
+            int originalHeight = original.getIconHeight();
+
+            double scale = Math.min(
+                    (double) maxWidth / originalWidth,
+                    (double) maxHeight / originalHeight
+            );
+
+            int newWidth = (int) (originalWidth * scale);
+            int newHeight = (int) (originalHeight * scale);
+
+            Image scaledImage = original.getImage().getScaledInstance(
+                    newWidth,
+                    newHeight,
+                    Image.SCALE_SMOOTH
+            );
+
+            piclabel = new JLabel(new ImageIcon(scaledImage));
+            piclabel.setBounds(400, 5, maxWidth, maxHeight);
+        } else {
+            log("Could not find Tnyx logo", 3);
+        }
+
 
         mainPanel = new JPanel(null);
         //mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
@@ -131,6 +174,8 @@ public class LockFrame extends JFrame implements ActionListener {
         mainPanel.add(selectedVaultPanel);
         mainPanel.add(pwField);
         mainPanel.add(openButton);
+        mainPanel.add(newVaultButton);
+        mainPanel.add(piclabel);
 
 
         mainPanel.add(exitButton);
@@ -207,6 +252,7 @@ public class LockFrame extends JFrame implements ActionListener {
                 UiManager.setOpenedVault(vault);
                 UiManager.setMainFrameVault();
                 UiManager.showMainScreen();
+                MainFrame.updateEntries();
             } catch (IOException ex) {
                 log("could not pass values to VaultHandler.openVault", 4);
                 JOptionPane.showMessageDialog(
@@ -219,8 +265,26 @@ public class LockFrame extends JFrame implements ActionListener {
             }
 
 
+
+
+
         }
 
+        if (e.getSource() == newVaultButton) {
+            try {
+                VaultHandler.createEncryptedVault(file.getAbsolutePath(), pwField.getPassword());
+                System.out.println("test " + file.getAbsolutePath() + " " + pwField.getPassword());
+            } catch (IOException ex) {
+                log("Could not create new Vault from Gui", 3);
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Could not create vault. Is the path correct?",
+                        "Could not create vault",
+                        JOptionPane.ERROR_MESSAGE
+                );
+            }
+        }
 
 
 

@@ -11,3 +11,5 @@ For a security report, include:
 - and any sample vault data that is safe to share.
 
 Do not send real master passwords, real vaults, recovery codes, or production credentials.
+
+For private communication, you can reach me at toasti08.2@gmail.com

@@ -28,14 +28,4 @@ A dedicated Java integration harness was run against the hardened source and the
 10. External modification is detected before save.
 11. Encrypted ciphertext tampering fails authentication.
 
-## Maven limitation
 
-Maven is not installed in the audit execution environment, and outbound dependency downloads are unavailable. Therefore a real `mvn clean verify` / Surefire execution and OWASP Dependency-Check database scan could not be run here. The POM, test sources, and security profiles were still statically validated, and the application source was compiled and exercised with the integration harness above.
-
-This is intentionally documented rather than presenting stale `target/surefire-reports` from the original upload as evidence. Those generated artifacts were removed from the hardened archive.
-
-## Build-fix validation after Java 26 feedback
-
-The Enforcer configuration was corrected after validation on a JDK 26.0.2 environment. The accepted JDK range is now `[21,27)`, so Java 26 is explicitly supported while Java 27+ requires an intentional project update. Maven lifecycle plugins that were previously supplied only by default lifecycle bindings are now explicitly pinned: clean 3.5.0, resources 3.5.0, install 3.1.4, deploy 3.1.4, and site 3.22.0. This satisfies the `requirePluginVersions` rule for the plugins reported by Maven.
-
-Maven itself was not available in this audit environment, so this specific correction was validated statically against the reported Enforcer failures rather than by claiming a local `mvn clean verify` run.

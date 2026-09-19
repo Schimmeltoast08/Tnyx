@@ -205,7 +205,7 @@ public class VaultSerializer {
 
             PasswordEntry entry = PasswordEntrySerializer.deserializePasswordEntry(entryData);
 
-            vault.getEntries().add(entry);
+            vault.addEntry(entry);
         }
 
         // Ensure entire file was consumed

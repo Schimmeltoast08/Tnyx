@@ -6,6 +6,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -39,11 +40,12 @@ public class Vault {
     }
 
     public byte[] getSalt() {
-        return salt;
+        return salt.clone();
     }
 
     public void setSalt(byte[] salt) {
-        this.salt = salt;
+        if (salt == null) throw new IllegalArgumentException("salt must not be null");
+        this.salt = salt.clone();
     }
 
     public String getEncryptionAlgorithm() {
@@ -55,11 +57,12 @@ public class Vault {
     }
 
     public byte[] getNonce() {
-        return nonce;
+        return nonce.clone();
     }
 
     public void setNonce(byte[] nonce) {
-        this.nonce = nonce;
+        if (nonce == null) throw new IllegalArgumentException("nonce must not be null");
+        this.nonce = nonce.clone();
     }
 
     public long getCreationTime() {
@@ -79,15 +82,16 @@ public class Vault {
     }
 
     public byte[] getNonce2() {
-        return nonce2;
+        return nonce2.clone();
     }
 
     public void setNonce2(byte[] nonce2) {
-        this.nonce2 = nonce2;
+        if (nonce2 == null) throw new IllegalArgumentException("nonce2 must not be null");
+        this.nonce2 = nonce2.clone();
     }
 
     public List<PasswordEntry> getEntries() {
-        return entries;
+        return Collections.unmodifiableList(entries);
     }
 
     public PasswordEntry getEntry(UUID uuid){
@@ -104,6 +108,13 @@ public class Vault {
 
 
     public void addEntry(PasswordEntry entry) {
+        if (entry == null) throw new IllegalArgumentException("entry must not be null");
+        if (entries.stream().anyMatch(existing -> existing.getId().equals(entry.getId()))) {
+            throw new IllegalArgumentException("Duplicate entry UUID");
+        }
+        if (entries.size() >= com.tnyx.crypto.CryptoConstants.MAX_ENTRIES) {
+            throw new IllegalArgumentException("Too many entries");
+        }
         entries.add(entry);
     }
 

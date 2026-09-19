@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import com.tnyx.crypto.EncryptedVault;
+import com.tnyx.crypto.CryptoConstants;
 import com.tnyx.util.Log;
 
 public class VaultReader {
@@ -141,7 +142,12 @@ public class VaultReader {
     }
 
     public static byte[] readBytes(String filepath) throws IOException {
-        return Files.readAllBytes(Path.of(filepath)); // wtf why so simple? Incredible
+        Path path = Path.of(filepath);
+        long size = Files.size(path);
+        if (size <= 0 || size > CryptoConstants.MAX_VAULT_FILE_SIZE + 4096L) {
+            throw new IOException("Vault file is missing, empty, or too large");
+        }
+        return Files.readAllBytes(path);
     }
 
     public static EncryptedVault readEncryptedVault(String filepath) throws IOException {

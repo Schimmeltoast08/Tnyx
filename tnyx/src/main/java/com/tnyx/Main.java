@@ -43,9 +43,20 @@ public class Main {
     }
 
     private static void edit(String[] args) {
-        try{
-        VaultHandler.editEntry(args[1], getPassword());
-        } catch (Exception e){}
+        if (args.length < 2) {
+            log("Missing vault path for --edit", 3);
+            return;
+        }
+        try {
+            char[] password = getPassword();
+            try {
+                VaultHandler.editEntry(args[1], password);
+            } finally {
+                Arrays.fill(password, '\0');
+            }
+        } catch (IOException e) {
+            log("Could not edit password entry", 4);
+        }
     }
 
     private static void remove(String[] args) {
@@ -57,60 +68,74 @@ public class Main {
     }
 
     private static void add(String[] args) {
-        Console console = System.console();
+        Console console = requireConsole();
 
-        String filepath;
-        if (args.length > 1) {
-            filepath = args[1];
-        } else {
-            filepath = console.readLine("Filepath: ");
-        }
-
+        String filepath = args.length > 1 ? args[1] : console.readLine("Filepath: ");
         char[] masterPW = console.readPassword("Vault Master Password: ");
-        String name = console.readLine("Entry name: ");
-        String username = console.readLine("Username: ");
         char[] pw = console.readPassword("Password: ");
-        String password = new String(pw); // IMMUTABLE! FIX
-        String url = console.readLine("Url: ");
+        try {
+            String name = console.readLine("Entry name: ");
+            String username = console.readLine("Username: ");
+            String url = console.readLine("Url: ");
 
-
-        VaultHandler.addVaultEntry(filepath, name, username, password, url, masterPW);
+            // The current PasswordEntry model stores passwords as String. This is
+            // still a memory-exposure limitation; the char[] is cleared here.
+            String password = new String(pw);
+            VaultHandler.addVaultEntry(filepath, name, username, password, url, masterPW);
+        } finally {
+            Arrays.fill(masterPW, '\0');
+            Arrays.fill(pw, '\0');
+        }
     }
 
     private static void open(String[] args) {
+        if (args.length < 2) {
+            log("Missing vault path for --open", 3);
+            return;
+        }
+        char[] password = getPassword();
         try {
-            char[] password = getPassword();
             Vault vault = VaultHandler.decryptVault(args[1], password);
-            vault.printVault(); // temporary for development
-            Arrays.fill(password, '\n');
+            vault.printVault();
         } catch (IOException e) {
-            log("General Error at reading vault", 4);
-            System.out.println("Error at reading vault. Possibly wrong password or corrupted vault.");
-
+            log("General error reading vault", 4);
+            System.out.println("Error reading vault. Possibly wrong password or corrupted vault.");
+        } finally {
+            Arrays.fill(password, '\0');
         }
     }
 
     private static void newVault(String[] args) {
+        if (args.length < 2) {
+            log("Missing vault path for --new", 3);
+            return;
+        }
+        char[] password = getPassword();
         try {
-            log("Creating new Vault", 2);
-            char[] password = getPassword();
+            log("Creating new vault", 2);
             VaultHandler.createEncryptedVault(args[1], password);
-            Arrays.fill(password, '\n');
         } catch (IOException e) {
-            log("Failed to create Vault", 4);
+            log("Failed to create vault", 4);
+        } finally {
+            Arrays.fill(password, '\0');
         }
     }
 
     private static char[] getPassword() {
-        Console console = System.console();
-
-        if (console == null){
-            log("Could not acquire console for password entry", 4);
-        }
-
+        Console console = requireConsole();
         char[] password = console.readPassword("Master password: ");
-        assert password != null; // just in case
+        if (password == null) {
+            throw new IllegalStateException("Could not read master password");
+        }
         return password;
+    }
+
+    private static Console requireConsole() {
+        Console console = System.console();
+        if (console == null) {
+            throw new IllegalStateException("Password entry requires a real console");
+        }
+        return console;
     }
 
     private static void gui(String[] args){

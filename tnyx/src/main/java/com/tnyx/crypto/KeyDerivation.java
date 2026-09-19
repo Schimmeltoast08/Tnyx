@@ -1,5 +1,7 @@
 package com.tnyx.crypto;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -7,53 +9,63 @@ import java.util.Arrays;
 import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
 
-import com.tnyx.util.Log;
+public final class KeyDerivation {
+    private static final SecureRandom RANDOM = new SecureRandom();
 
-public class KeyDerivation {
+    private KeyDerivation() {}
 
     public static byte[] generateSalt() {
         byte[] salt = new byte[CryptoConstants.SALT_LENGTH];
-        SecureRandom random = new SecureRandom();
-        random.nextBytes(salt);
+        RANDOM.nextBytes(salt);
         return salt;
-
     }
 
-    public static byte[] deriveKEK(char[] password, byte[] salt, int memoryKib, int iterations, int parallelism, int outputLength) {
-        Log.log("Deriving KEK", 1);
+    public static byte[] deriveKEK(
+            char[] password,
+            byte[] salt,
+            int memoryKib,
+            int iterations,
+            int parallelism,
+            int outputLength) {
 
-        byte[] passwordBytes = new String(password).getBytes(StandardCharsets.UTF_8); //TODO fix away from immuteable string
+        if (password == null || password.length == 0) {
+            throw new IllegalArgumentException("Password must not be empty");
+        }
+        if (salt == null || salt.length != CryptoConstants.SALT_LENGTH) {
+            throw new IllegalArgumentException("Invalid salt length");
+        }
+        if (memoryKib != CryptoConstants.ARGON2_MEMORY_KIB
+                || iterations != CryptoConstants.ARGON2_ITERATIONS
+                || parallelism != CryptoConstants.ARGON2_PARALLELISM
+                || outputLength != CryptoConstants.DEK_LENGTH) {
+            throw new IllegalArgumentException("Unsupported Argon2 parameters");
+        }
 
-        Argon2Parameters parameters = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
-                .withSalt(salt)
-                .withMemoryAsKB(memoryKib)
-                .withIterations(iterations)
-                .withParallelism(parallelism)
-                .build();
+        ByteBuffer encoded = StandardCharsets.UTF_8.encode(CharBuffer.wrap(password));
+        byte[] passwordBytes = new byte[encoded.remaining()];
+        encoded.get(passwordBytes);
 
-        Argon2BytesGenerator generator = new Argon2BytesGenerator();
-        generator.init(parameters);
+        try {
+            Argon2Parameters parameters = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
+                    .withSalt(Arrays.copyOf(salt, salt.length))
+                    .withMemoryAsKB(memoryKib)
+                    .withIterations(iterations)
+                    .withParallelism(parallelism)
+                    .build();
 
-        byte[] kek = new byte[outputLength];
-        generator.generateBytes(passwordBytes, kek);
+            Argon2BytesGenerator generator = new Argon2BytesGenerator();
+            generator.init(parameters);
 
-        Arrays.fill(passwordBytes, (byte) 0);
-        Arrays.fill(password, '\0');
-
-        Log.log("KEK Derived: OK", 1);
-
-        return kek;
+            byte[] kek = new byte[outputLength];
+            generator.generateBytes(passwordBytes, kek);
+            return kek;
+        } finally {
+            Arrays.fill(passwordBytes, (byte) 0);
+            if (encoded.hasArray()) {
+                java.util.Arrays.fill(
+                        encoded.array(), encoded.arrayOffset(),
+                        encoded.arrayOffset() + encoded.capacity(), (byte) 0);
+            }
+        }
     }
-
-    public static byte[] deriveKEK(char[] password, byte[] salt) {
-        return deriveKEK(
-                password,
-                salt,
-                CryptoConstants.ARGON2_MEMORY_KIB,
-                CryptoConstants.ARGON2_ITERATIONS,
-                CryptoConstants.ARGON2_PARALLELISM,
-                CryptoConstants.DEK_LENGTH
-        );
-    }
-
 }

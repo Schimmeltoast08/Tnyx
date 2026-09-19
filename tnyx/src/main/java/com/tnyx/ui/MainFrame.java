@@ -67,8 +67,7 @@ public class MainFrame extends JFrame implements ActionListener {
         returnToLockFrameButton = new JButton("Return to Lockscreen");
         returnToLockFrameButton.addActionListener(e -> {
             log("Returning to LockFrame", 2);
-            UiManager.showLockScreen();
-            UiManager.resetPWFieldOfLockscreen();
+            UiManager.lockAndClear();
         });
 
         JPanel toolbar = new JPanel(new BorderLayout());
@@ -152,6 +151,12 @@ public class MainFrame extends JFrame implements ActionListener {
         openedVault = opVault;
         vault = opVault == null ? null : opVault.getVault();
         clearSelection();
+        if (opVault == null) {
+            entryPanels.clear();
+            entryList.removeAll();
+            entryList.revalidate();
+            entryList.repaint();
+        }
         updateActionState();
     }
 

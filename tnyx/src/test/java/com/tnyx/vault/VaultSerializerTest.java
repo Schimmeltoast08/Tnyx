@@ -56,7 +56,7 @@ public class VaultSerializerTest {
         entry.setUrl("https://www.test.url.com/tnyx");
         entry.setUsername("testUsername");
 
-        original.getEntries().add(entry);
+        original.addEntry(entry);
 
         byte[] serialized = VaultSerializer.serializeVault(original);
         Vault restored = VaultSerializer.deserializeVault(serialized);

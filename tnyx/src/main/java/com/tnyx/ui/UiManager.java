@@ -21,6 +21,18 @@ public class UiManager {
             lockFrame.setVisible(true);
         }
 
+        public static void lockAndClear() {
+            OpenedVault current = openedVault;
+            openedVault = null;
+            mainFrame.setOpenedVault(null);
+            mainFrame.setVaultPath(null);
+            if (current != null) {
+                current.close();
+            }
+            resetPWFieldOfLockscreen();
+            showLockScreen();
+        }
+
         public static void showMainScreen() {
             lockFrame.setVisible(false);
             mainFrame.setVisible(true);
@@ -31,6 +43,9 @@ public class UiManager {
     }
 
     public static void setOpenedVault(OpenedVault opVault) {
+        if (openedVault != null && openedVault != opVault) {
+            openedVault.close();
+        }
         openedVault = opVault;
     }
 

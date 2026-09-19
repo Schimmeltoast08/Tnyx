@@ -1,240 +1,170 @@
 package com.tnyx.vault;
 
+import com.tnyx.crypto.CryptoConstants;
+import com.tnyx.crypto.EncryptedVault;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
-import com.tnyx.crypto.EncryptedVault;
-import com.tnyx.util.Log;
+public final class EncryptedVaultSerializer {
+    private static final int FORMAT_VERSION = 3;
+    private static final byte[] KDF = "Argon2id".getBytes(StandardCharsets.UTF_8);
+    private static final byte[] ALGORITHM = "AES-256-GCM".getBytes(StandardCharsets.UTF_8);
 
-public class EncryptedVaultSerializer {
+    private EncryptedVaultSerializer() {}
 
-    public static byte[] serializeEncryptedVault(EncryptedVault encryptedVault) throws IOException {
+    public static byte[] serializeEncryptedVault(EncryptedVault v) throws IOException {
+        validate(v);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
+        writeMarker(out, "[Format]");
+        writeInt(out, FORMAT_VERSION);
 
-        // [Format]
-        out.write("[Format]".getBytes(StandardCharsets.UTF_8));
+        writeMarker(out, "[KDF]");
+        writeBytes(out, KDF);
+        writeBytes(out, v.getSalt());
+        writeInt(out, v.getArgon2MemoryKib());
+        writeInt(out, v.getArgon2Iterations());
+        writeInt(out, v.getArgon2Parallelism());
+        writeInt(out, v.getArgon2OutputLength());
 
-        ByteBuffer formatVersion = ByteBuffer.allocate(4);
-        formatVersion.putInt(3);
-        out.write(formatVersion.array());
+        writeMarker(out, "[Encryption]");
+        writeBytes(out, ALGORITHM);
+        writeBytes(out, v.getDekNonce());
+        writeBytes(out, v.getEncryptedDek());
 
-        // [KDF]
-        out.write("[KDF]".getBytes(StandardCharsets.UTF_8));
+        writeMarker(out, "[Data]");
+        writeBytes(out, v.getDataNonce());
+        writeBytes(out, v.getEncryptedData());
 
-        byte[] kdfBytes = "Argon2id".getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer kdfLength = ByteBuffer.allocate(4);
-        kdfLength.putInt(kdfBytes.length);
-        out.write(kdfLength.array());
-
-        out.write(kdfBytes);
-
-        ByteBuffer saltLength = ByteBuffer.allocate(4);
-        saltLength.putInt(encryptedVault.getSalt().length);
-        out.write(saltLength.array());
-
-        out.write(encryptedVault.getSalt());
-
-        ByteBuffer memory = ByteBuffer.allocate(4);
-        memory.putInt(encryptedVault.getArgon2MemoryKib());
-        out.write(memory.array());
-
-        ByteBuffer iterations = ByteBuffer.allocate(4);
-        iterations.putInt(encryptedVault.getArgon2Iterations());
-        out.write(iterations.array());
-
-        ByteBuffer parallelism = ByteBuffer.allocate(4);
-        parallelism.putInt(encryptedVault.getArgon2Parallelism());
-        out.write(parallelism.array());
-
-        ByteBuffer outputLength = ByteBuffer.allocate(4);
-        outputLength.putInt(encryptedVault.getArgon2OutputLength());
-        out.write(outputLength.array());
-
-        // [Encryption]
-        out.write("[Encryption]".getBytes(StandardCharsets.UTF_8));
-
-        byte[] encryptionAlgorithmBytes = "AES-256-GCM".getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer encryptionAlgorithmLength = ByteBuffer.allocate(4);
-        encryptionAlgorithmLength.putInt(encryptionAlgorithmBytes.length);
-        out.write(encryptionAlgorithmLength.array());
-
-        out.write(encryptionAlgorithmBytes);
-
-        ByteBuffer dekNonceLength = ByteBuffer.allocate(4);
-        dekNonceLength.putInt(encryptedVault.getDekNonce().length);
-        out.write(dekNonceLength.array());
-
-        out.write(encryptedVault.getDekNonce());
-
-        ByteBuffer encryptedDekLength = ByteBuffer.allocate(4);
-        encryptedDekLength.putInt(encryptedVault.getEncryptedDek().length);
-        out.write(encryptedDekLength.array());
-
-        out.write(encryptedVault.getEncryptedDek());
-
-        // [Data]
-        out.write("[Data]".getBytes(StandardCharsets.UTF_8));
-
-        ByteBuffer dataNonceLength = ByteBuffer.allocate(4);
-        dataNonceLength.putInt(encryptedVault.getDataNonce().length);
-        out.write(dataNonceLength.array());
-
-        out.write(encryptedVault.getDataNonce());
-
-        ByteBuffer encryptedDataLength = ByteBuffer.allocate(4);
-        encryptedDataLength.putInt(encryptedVault.getEncryptedData().length);
-        out.write(encryptedDataLength.array());
-
-        out.write(encryptedVault.getEncryptedData());
-
-        return out.toByteArray();
+        byte[] result = out.toByteArray();
+        if (result.length > CryptoConstants.MAX_VAULT_FILE_SIZE + 4096) {
+            throw new IOException("Encrypted vault is too large");
+        }
+        return result;
     }
 
     public static EncryptedVault deserializeEncryptedVault(byte[] data) {
+        if (data == null || data.length > CryptoConstants.MAX_VAULT_FILE_SIZE + 4096) {
+            throw new IllegalArgumentException("Encrypted vault is missing or too large");
+        }
 
         ByteBuffer buffer = ByteBuffer.wrap(data);
-
         readMarker(buffer, "[Format]");
-
-        requireBytes(buffer, 4, "format version");
-        int formatVersion = buffer.getInt();
-
-        if (formatVersion != 3) {
-            String message = "Unsupported encrypted vault format version: " + formatVersion;
-            Log.log(message, 4);
-            throw new IllegalArgumentException(message);
+        int version = readInt(buffer, "format version");
+        if (version != FORMAT_VERSION) {
+            throw new IllegalArgumentException("Unsupported encrypted vault format version");
         }
 
         readMarker(buffer, "[KDF]");
-
-        int kdfLength = readLength(buffer, "KDF");
-        requireBytes(buffer, kdfLength, "KDF");
-        byte[] kdfBytes = new byte[kdfLength];
-        buffer.get(kdfBytes);
-
-        String kdf = new String(kdfBytes, StandardCharsets.UTF_8);
-
-        if (!kdf.equals("Argon2id")) {
-            String message = "Unsupported KDF: " + kdf;
-            Log.log(message, 4);
-            throw new IllegalArgumentException(message);
+        byte[] kdf = readBytes(buffer, "KDF", KDF.length, KDF.length);
+        if (!Arrays.equals(kdf, KDF)) {
+            throw new IllegalArgumentException("Unsupported KDF");
         }
 
-        int saltLength = readLength(buffer, "salt");
-        requireBytes(buffer, saltLength, "salt");
-        byte[] salt = new byte[saltLength];
-        buffer.get(salt);
+        byte[] salt = readBytes(buffer, "salt",
+                CryptoConstants.SALT_LENGTH, CryptoConstants.SALT_LENGTH);
 
-        requireBytes(buffer, 16, "Argon2 parameters");
+        int memory = readInt(buffer, "Argon2 memory");
+        int iterations = readInt(buffer, "Argon2 iterations");
+        int parallelism = readInt(buffer, "Argon2 parallelism");
+        int outputLength = readInt(buffer, "Argon2 output length");
 
-        int memoryKib = buffer.getInt();
-        int iterations = buffer.getInt();
-        int parallelism = buffer.getInt();
-        int outputLength = buffer.getInt();
+        if (memory != CryptoConstants.ARGON2_MEMORY_KIB
+                || iterations != CryptoConstants.ARGON2_ITERATIONS
+                || parallelism != CryptoConstants.ARGON2_PARALLELISM
+                || outputLength != CryptoConstants.DEK_LENGTH) {
+            throw new IllegalArgumentException("Unsupported Argon2 parameters");
+        }
 
         readMarker(buffer, "[Encryption]");
-
-        int encryptionAlgorithmLength = readLength(buffer, "encryption algorithm");
-        requireBytes(buffer, encryptionAlgorithmLength, "encryption algorithm");
-
-        byte[] encryptionAlgorithmBytes = new byte[encryptionAlgorithmLength];
-        buffer.get(encryptionAlgorithmBytes);
-
-        String encryptionAlgorithm = new String(encryptionAlgorithmBytes, StandardCharsets.UTF_8);
-
-        if (!encryptionAlgorithm.equals("AES-256-GCM")) {
-            String message = "Unsupported encryption algorithm: " + encryptionAlgorithm;
-            Log.log(message, 4);
-            throw new IllegalArgumentException(message);
+        byte[] algorithm = readBytes(buffer, "encryption algorithm",
+                ALGORITHM.length, ALGORITHM.length);
+        if (!Arrays.equals(algorithm, ALGORITHM)) {
+            throw new IllegalArgumentException("Unsupported encryption algorithm");
         }
 
-        int dekNonceLength = readLength(buffer, "DEK nonce");
-        requireBytes(buffer, dekNonceLength, "DEK nonce");
-
-        byte[] dekNonce = new byte[dekNonceLength];
-        buffer.get(dekNonce);
-
-        int encryptedDekLength = readLength(buffer, "encrypted DEK");
-        requireBytes(buffer, encryptedDekLength, "encrypted DEK");
-
-        byte[] encryptedDek = new byte[encryptedDekLength];
-        buffer.get(encryptedDek);
+        byte[] dekNonce = readBytes(buffer, "DEK nonce",
+                CryptoConstants.NONCE_LENGTH, CryptoConstants.NONCE_LENGTH);
+        byte[] encryptedDek = readBytes(buffer, "encrypted DEK",
+                CryptoConstants.ENCRYPTED_DEK_LENGTH, CryptoConstants.ENCRYPTED_DEK_LENGTH);
 
         readMarker(buffer, "[Data]");
-
-        int dataNonceLength = readLength(buffer, "data nonce");
-        requireBytes(buffer, dataNonceLength, "data nonce");
-
-        byte[] dataNonce = new byte[dataNonceLength];
-        buffer.get(dataNonce);
-
-        int encryptedDataLength = readLength(buffer, "encrypted data");
-        requireBytes(buffer, encryptedDataLength, "encrypted data");
-
-        byte[] encryptedData = new byte[encryptedDataLength];
-        buffer.get(encryptedData);
+        byte[] dataNonce = readBytes(buffer, "data nonce",
+                CryptoConstants.NONCE_LENGTH, CryptoConstants.NONCE_LENGTH);
+        byte[] encryptedData = readBytes(buffer, "encrypted data",
+                CryptoConstants.GCM_TAG_BYTES,
+                CryptoConstants.MAX_VAULT_FILE_SIZE + CryptoConstants.GCM_TAG_BYTES);
 
         if (buffer.hasRemaining()) {
-            String message = "Corrupted encrypted vault: unexpected data after encrypted data";
-            Log.log(message, 4);
-            throw new IllegalArgumentException(message);
+            throw new IllegalArgumentException("Trailing data in encrypted vault");
         }
 
         return new EncryptedVault(
-                salt,
-                memoryKib,
-                iterations,
-                parallelism,
-                outputLength,
-                dekNonce,
-                encryptedDek,
-                dataNonce,
-                encryptedData
-        );
+                salt, memory, iterations, parallelism, outputLength,
+                dekNonce, encryptedDek, dataNonce, encryptedData);
     }
 
-    private static int readLength(ByteBuffer buffer, String field) {
-
-        requireBytes(buffer, 4, field + " length");
-
-        int length = buffer.getInt();
-
-        if (length < 0) {
-            String message = "Corrupted encrypted vault: negative " + field + " length";
-            Log.log(message, 4);
-            throw new IllegalArgumentException(message);
-        }
-
-        return length;
-    }
-
-    private static void requireBytes(ByteBuffer buffer, int required, String field) {
-
-        if (required < 0 || required > buffer.remaining()) {
-            String message = "Corrupted encrypted vault: incomplete " + field;
-            Log.log(message, 4);
-            throw new IllegalArgumentException(message);
+    private static void validate(EncryptedVault v) throws IOException {
+        if (v == null
+                || v.getSalt().length != CryptoConstants.SALT_LENGTH
+                || v.getDekNonce().length != CryptoConstants.NONCE_LENGTH
+                || v.getEncryptedDek().length != CryptoConstants.ENCRYPTED_DEK_LENGTH
+                || v.getDataNonce().length != CryptoConstants.NONCE_LENGTH
+                || v.getEncryptedData().length < CryptoConstants.GCM_TAG_BYTES
+                || v.getArgon2MemoryKib() != CryptoConstants.ARGON2_MEMORY_KIB
+                || v.getArgon2Iterations() != CryptoConstants.ARGON2_ITERATIONS
+                || v.getArgon2Parallelism() != CryptoConstants.ARGON2_PARALLELISM
+                || v.getArgon2OutputLength() != CryptoConstants.DEK_LENGTH) {
+            throw new IOException("Invalid encrypted vault");
         }
     }
 
-    private static void readMarker(ByteBuffer buffer, String expected) {
+    private static void writeMarker(ByteArrayOutputStream out, String marker) {
+        out.writeBytes(marker.getBytes(StandardCharsets.UTF_8));
+    }
 
+    private static void writeInt(ByteArrayOutputStream out, int value) {
+        out.writeBytes(ByteBuffer.allocate(4).putInt(value).array());
+    }
+
+    private static void writeBytes(ByteArrayOutputStream out, byte[] value) {
+        writeInt(out, value.length);
+        out.writeBytes(value);
+    }
+
+    private static int readInt(ByteBuffer b, String field) {
+        require(b, 4, field);
+        return b.getInt();
+    }
+
+    private static byte[] readBytes(ByteBuffer b, String field, int min, int max) {
+        int length = readInt(b, field + " length");
+        if (length < min || length > max) {
+            throw new IllegalArgumentException("Invalid " + field + " length");
+        }
+        require(b, length, field);
+        byte[] result = new byte[length];
+        b.get(result);
+        return result;
+    }
+
+    private static void require(ByteBuffer b, int count, String field) {
+        if (count < 0 || count > b.remaining()) {
+            throw new IllegalArgumentException("Truncated encrypted vault: " + field);
+        }
+    }
+
+    private static void readMarker(ByteBuffer b, String expected) {
         byte[] expectedBytes = expected.getBytes(StandardCharsets.UTF_8);
-
-        requireBytes(buffer, expectedBytes.length, expected + " marker");
-
+        require(b, expectedBytes.length, expected);
         byte[] actual = new byte[expectedBytes.length];
-        buffer.get(actual);
-
-        if (!java.util.Arrays.equals(actual, expectedBytes)) {
-            String message = "Corrupted encrypted vault: expected " + expected + " marker";
-            Log.log(message, 4);
-            throw new IllegalArgumentException(message);
+        b.get(actual);
+        if (!Arrays.equals(actual, expectedBytes)) {
+            throw new IllegalArgumentException("Invalid encrypted vault marker");
         }
     }
 }

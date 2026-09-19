@@ -1,251 +1,132 @@
 package com.tnyx.vault;
 
+import com.tnyx.crypto.CryptoConstants;
+
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.List;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.CharacterCodingException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
-import com.tnyx.util.Log;
+/** Strict plaintext vault format. Version 3 is accepted only for migration; version 4 is emitted. */
+public final class VaultSerializer {
+    private static final int CURRENT_VERSION = Vault.CURRENT_FORMAT_VERSION;
+    private static final int LEGACY_VERSION = 3;
+    private static final byte[] FORMAT = "[Format]".getBytes(StandardCharsets.US_ASCII);
+    private static final byte[] TIME = "[Time]".getBytes(StandardCharsets.US_ASCII);
+    private static final byte[] ENTRIES = "[Entries]".getBytes(StandardCharsets.US_ASCII);
 
-public class VaultSerializer {
+    private VaultSerializer() {}
 
-    public static byte[] serializeVault(Vault vault) throws IOException {
-
-        List<PasswordEntry> entries = vault.getEntries();
-
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-        // [Format]
-        out.write("[Format]".getBytes(StandardCharsets.UTF_8));
-
-        ByteBuffer formatVersion = ByteBuffer.allocate(4);
-        formatVersion.putInt(vault.getVaultFormatVersion());
-        out.write(formatVersion.array());
-
-        // [KDF]
-        out.write("[KDF]".getBytes(StandardCharsets.UTF_8));
-
-        byte[] kdfBytes
-                = vault.getKDF().getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer kdfLength = ByteBuffer.allocate(4);
-        kdfLength.putInt(kdfBytes.length);
-        out.write(kdfLength.array());
-
-        out.write(kdfBytes);
-
-        ByteBuffer saltLength = ByteBuffer.allocate(4);
-        saltLength.putInt(vault.getSalt().length);
-        out.write(saltLength.array());
-
-        out.write(vault.getSalt());
-
-        // [Encryption]
-        out.write("[Encryption]".getBytes(StandardCharsets.UTF_8));
-
-        byte[] encryptionAlgorithmBytes
-                = vault.getEncryptionAlgorithm()
-                        .getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer encryptionAlgorithmLength
-                = ByteBuffer.allocate(4);
-
-        encryptionAlgorithmLength.putInt(
-                encryptionAlgorithmBytes.length
-        );
-
-        out.write(encryptionAlgorithmLength.array());
-
-        out.write(encryptionAlgorithmBytes);
-
-        ByteBuffer nonceLength = ByteBuffer.allocate(4);
-        nonceLength.putInt(vault.getNonce().length);
-        out.write(nonceLength.array());
-
-        out.write(vault.getNonce());
-
-        // [Time]
-        out.write("[Time]".getBytes(StandardCharsets.UTF_8));
-
-        ByteBuffer creationTime = ByteBuffer.allocate(8);
-        creationTime.putLong(vault.getCreationTime());
-        out.write(creationTime.array());
-
-        ByteBuffer lastEditedTime = ByteBuffer.allocate(8);
-        lastEditedTime.putLong(vault.getLastEditedTime());
-        out.write(lastEditedTime.array());
-
-        // [Data]
-        out.write("[Data]".getBytes(StandardCharsets.UTF_8));
-
-        ByteBuffer nonce2Length = ByteBuffer.allocate(4);
-        nonce2Length.putInt(vault.getNonce2().length);
-        out.write(nonce2Length.array());
-
-        out.write(vault.getNonce2());
-
-        // Number of entries
-        ByteBuffer entryCount = ByteBuffer.allocate(4);
-        entryCount.putInt(entries.size());
-        out.write(entryCount.array());
-
-        // Entries
-        for (PasswordEntry entry : entries) {
-
-            byte[] entryData
-                    = PasswordEntrySerializer.serializePasswordEntry(entry);
-
-            // Length of entry
-            ByteBuffer entryLength = ByteBuffer.allocate(4);
-            entryLength.putInt(entryData.length);
-            out.write(entryLength.array());
-
-            // Entry itself
-            out.write(entryData);
+    public static byte[] serializeVault(Vault vault) {
+        if (vault == null) throw new IllegalArgumentException("vault must not be null");
+        if (vault.getEntries().size() > CryptoConstants.MAX_ENTRIES) throw new IllegalArgumentException("Too many entries");
+        int size = FORMAT.length + 4 + TIME.length + 16 + ENTRIES.length + 4;
+        byte[][] serializedEntries = new byte[vault.getEntries().size()][];
+        for (int i = 0; i < serializedEntries.length; i++) {
+            serializedEntries[i] = PasswordEntrySerializer.serializePasswordEntry(vault.getEntries().get(i));
+            size = checkedAdd(size, 4 + serializedEntries[i].length);
+            if (size > CryptoConstants.MAX_VAULT_PLAINTEXT_SIZE) throw new IllegalArgumentException("Vault is too large");
         }
-
+        ByteArrayOutputStream out = new ByteArrayOutputStream(size);
+        out.writeBytes(FORMAT); writeInt(out, CURRENT_VERSION);
+        out.writeBytes(TIME); writeLong(out, vault.getCreationTime()); writeLong(out, vault.getLastEditedTime());
+        out.writeBytes(ENTRIES); writeInt(out, serializedEntries.length);
+        for (byte[] entry : serializedEntries) { writeInt(out, entry.length); out.writeBytes(entry); }
         return out.toByteArray();
     }
 
-    public static Vault deserializeVault(byte[] vaultData) {
+    public static Vault deserializeVault(byte[] data) {
+        if (data == null || data.length > CryptoConstants.MAX_VAULT_PLAINTEXT_SIZE) throw new IllegalArgumentException("Vault is missing or too large");
+        ByteBuffer b = ByteBuffer.wrap(data);
+        readMarker(b, FORMAT);
+        int version = readInt(b, "format version");
+        if (version == CURRENT_VERSION) return parseV4(b);
+        if (version == LEGACY_VERSION) return parseLegacyV3(b);
+        throw new IllegalArgumentException("Unsupported vault plaintext format version: " + version);
+    }
 
-        ByteBuffer buffer = ByteBuffer.wrap(vaultData);
-
-        readMarker(buffer, "[Format]");
-
-        int vaultFormatVersion = buffer.getInt();
-
-        readMarker(buffer, "[KDF]");
-
-        int kdfLength = buffer.getInt();
-        validateLength(kdfLength, buffer, "KDF");
-
-        byte[] kdfBytes = new byte[kdfLength];
-        buffer.get(kdfBytes);
-        String kdf = new String(kdfBytes, StandardCharsets.UTF_8);
-
-        int saltLength = buffer.getInt();
-        validateLength(saltLength, buffer, "salt");
-
-        byte[] salt = new byte[saltLength];
-        buffer.get(salt);
-
-        readMarker(buffer, "[Encryption]");
-
-        int encryptionAlgorithmLength = buffer.getInt();
-        validateLength(encryptionAlgorithmLength, buffer, "encryption algorithm");
-
-        byte[] encryptionAlgorithmBytes = new byte[encryptionAlgorithmLength];
-        buffer.get(encryptionAlgorithmBytes);
-        String encryptionAlgorithm = new String(encryptionAlgorithmBytes, StandardCharsets.UTF_8);
-
-        int nonceLength = buffer.getInt();
-        validateLength(nonceLength, buffer, "nonce");
-
-        byte[] nonce = new byte[nonceLength];
-        buffer.get(nonce);
-
-        readMarker(buffer, "[Time]");
-
-        if (buffer.remaining() < 16) { // 2 * long, a long has 8 bytes. 1 long creation date 1 long last edited date 
-            Log.log("Corrupted Vault: incomplete time block.", 4);
-            throw new IllegalArgumentException("Corrupted Vault: incomplete time block");
-        }
-
-        long creationTime = buffer.getLong();
-        long lastEditedTime = buffer.getLong();
-
-        readMarker(buffer, "[Data]");
-
-        int nonce2Length = buffer.getInt();
-        validateLength(nonce2Length, buffer, "nonce2");
-
-        byte[] nonce2 = new byte[nonce2Length];
-        buffer.get(nonce2);
-
-// entry count. // on 0 entries, this has a "0" there (in 4 bits, so 0000) 
-        if (buffer.remaining() < 4) {
-            Log.log("Corrupted vault: missing entry count", 4);
-            throw new IllegalArgumentException("Corrupted vault: missing entry count");
-        }
-
-        int entryCount = buffer.getInt();
-
-        if (entryCount < 0) {
-            Log.log("Corrupted vault: negative entry count", 4);
-            throw new IllegalArgumentException("Corrupted vault: negative entry count");
-        }
-
+    private static Vault parseV4(ByteBuffer b) {
+        readMarker(b, TIME);
+        long creation = readLong(b, "creation time");
+        long edited = readLong(b, "last edited time");
+        readMarker(b, ENTRIES);
+        int count = readInt(b, "entry count");
+        if (count < 0 || count > CryptoConstants.MAX_ENTRIES) throw new IllegalArgumentException("Invalid entry count");
         Vault vault = new Vault();
-
-        vault.setVaultFormatVersion(vaultFormatVersion);
-        vault.setKDF(kdf);
-        vault.setSalt(salt);
-        vault.setEncryptionAlgorithm(encryptionAlgorithm);
-        vault.setNonce(nonce);
-        vault.setCreationTime(creationTime);
-        vault.setLastEditedTime(lastEditedTime);
-        vault.setNonce2(nonce2);
-
-        for (int i = 0; i < entryCount; i++) {
-
-            if (buffer.remaining() < 4) {
-                Log.log("Corrupted vault: missing entry length", 4);
-                throw new IllegalArgumentException("Corrupted vault: missing entry length");
-            }
-
-            int entryLength = buffer.getInt();
-
-            validateLength(entryLength, buffer, "entry");
-
-            byte[] entryData = new byte[entryLength];
-            buffer.get(entryData);
-
-            PasswordEntry entry = PasswordEntrySerializer.deserializePasswordEntry(entryData);
-
-            vault.addEntry(entry);
-        }
-
-        // Ensure entire file was consumed
-        if (buffer.hasRemaining()) {
-            Log.log("Corrupted vault: unexpected data after entries {file was supposed to end, but did not}", 4);
-            throw new IllegalArgumentException("Corrupted vault: unexpected data after entries");
-        }
-
+        vault.setVaultFormatVersion(CURRENT_VERSION);
+        vault.setCreationTime(creation); vault.setLastEditedTime(edited);
+        parseEntries(b, count, vault);
+        ensureEnd(b);
         return vault;
     }
 
-// Scuffed name, but it reads markers like [Data] to validate the format. Can technically be used to validate any 2 pieces of data
-    private static void readMarker(ByteBuffer buffer, String expected) { // carefull, this modifies / advances the buffer index
-        byte[] expectedBytes = expected.getBytes(StandardCharsets.UTF_8);
+    private static Vault parseLegacyV3(ByteBuffer b) {
+        readMarker(b, "[KDF]".getBytes(StandardCharsets.US_ASCII));
+        String kdf = readUtf8Field(b, "KDF", 64);
+        byte[] salt = readBytesField(b, "salt", CryptoConstants.SALT_LENGTH);
+        readMarker(b, "[Encryption]".getBytes(StandardCharsets.US_ASCII));
+        String algorithm = readUtf8Field(b, "encryption algorithm", 64);
+        byte[] nonce = readBytesField(b, "nonce", CryptoConstants.NONCE_LENGTH);
+        readMarker(b, TIME);
+        long creation = readLong(b, "creation time");
+        long edited = readLong(b, "last edited time");
+        readMarker(b, "[Data]".getBytes(StandardCharsets.US_ASCII));
+        byte[] nonce2 = readBytesField(b, "nonce2", CryptoConstants.NONCE_LENGTH);
+        int count = readInt(b, "entry count");
+        if (count < 0 || count > CryptoConstants.MAX_ENTRIES) throw new IllegalArgumentException("Invalid entry count");
+        Vault vault = new Vault();
+        vault.setVaultFormatVersion(LEGACY_VERSION);
+        vault.setCreationTime(creation); vault.setLastEditedTime(edited);
+        parseEntries(b, count, vault);
+        ensureEnd(b);
+        if (!"Argon2id".equals(kdf) || !"AES".equals(algorithm)) throw new IllegalArgumentException("Invalid legacy vault cryptographic metadata");
+        return vault;
+    }
 
-        if (buffer.remaining() < expectedBytes.length) {
-            Log.log("Corrupted vault: missing " + expected + " marker", 4);
-            throw new IllegalArgumentException("Corrupted vault: missing " + expected + " marker");
-        }
-
-        byte[] actual = new byte[expectedBytes.length];
-        buffer.get(actual);
-
-        if (!Arrays.equals(actual, expectedBytes)) {
-            Log.log("Corrupted vault: missing " + expected + " marker", 4);
-            throw new IllegalArgumentException("Corrupted vault: expected " + expected + " marker");
+    private static void parseEntries(ByteBuffer b, int count, Vault vault) {
+        Set<UUID> ids = new HashSet<>();
+        for (int i = 0; i < count; i++) {
+            int length = readInt(b, "entry length");
+            if (length < 0 || length > CryptoConstants.MAX_ENTRY_BYTES || length > b.remaining()) throw new IllegalArgumentException("Invalid entry length");
+            byte[] entryBytes = new byte[length]; b.get(entryBytes);
+            PasswordEntry entry = PasswordEntrySerializer.deserializePasswordEntry(entryBytes);
+            if (!ids.add(entry.getId())) throw new IllegalArgumentException("Duplicate entry UUID");
+            vault.addEntry(entry);
         }
     }
 
-    private static void validateLength(int length, ByteBuffer buffer, String field) {
+    private static byte[] readBytesField(ByteBuffer b, String field, int exact) {
+        int length = readInt(b, field + " length");
+        if (length != exact || length > b.remaining()) throw new IllegalArgumentException("Invalid " + field + " length");
+        byte[] result = new byte[length]; b.get(result); return result;
+    }
 
-        if (length < 0) {
-            Log.log("Corrupted vault: negative " + field + " length", 4);
-            throw new IllegalArgumentException("Corrupted vault: negative " + field + " length");
-        }
-
-        if (length > buffer.remaining()) {
-            Log.log("Corrupted vault: " + field + " exceeds remaining data", 4);
-            throw new IllegalArgumentException("Corrupted vault: " + field + " exceeds remaining data");
+    private static String readUtf8Field(ByteBuffer b, String field, int max) {
+        int length = readInt(b, field + " length");
+        if (length < 0 || length > max || length > b.remaining()) throw new IllegalArgumentException("Invalid " + field + " length");
+        byte[] bytes = new byte[length]; b.get(bytes);
+        try {
+            return StandardCharsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT).onUnmappableCharacter(CodingErrorAction.REPORT).decode(ByteBuffer.wrap(bytes)).toString();
+        } catch (CharacterCodingException e) {
+            throw new IllegalArgumentException("Invalid UTF-8 in " + field, e);
+        } finally {
+            java.util.Arrays.fill(bytes, (byte) 0);
         }
     }
 
+    private static void readMarker(ByteBuffer b, byte[] expected) {
+        if (b.remaining() < expected.length) throw new IllegalArgumentException("Missing marker");
+        for (byte value : expected) if (b.get() != value) throw new IllegalArgumentException("Unexpected vault marker");
+    }
+
+    private static int readInt(ByteBuffer b, String field) { if (b.remaining() < 4) throw new IllegalArgumentException("Missing " + field); return b.getInt(); }
+    private static long readLong(ByteBuffer b, String field) { if (b.remaining() < 8) throw new IllegalArgumentException("Missing " + field); return b.getLong(); }
+    private static void ensureEnd(ByteBuffer b) { if (b.hasRemaining()) throw new IllegalArgumentException("Trailing data in vault"); }
+    private static void writeInt(ByteArrayOutputStream out, int value) { out.writeBytes(ByteBuffer.allocate(4).putInt(value).array()); }
+    private static void writeLong(ByteArrayOutputStream out, long value) { out.writeBytes(ByteBuffer.allocate(8).putLong(value).array()); }
+    private static int checkedAdd(int a, int b) { long result = (long) a + b; if (result > Integer.MAX_VALUE) throw new IllegalArgumentException("Vault is too large"); return (int) result; }
 }

@@ -12,6 +12,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +45,8 @@ public class LockFrame extends JFrame implements ActionListener {
 
     public LockFrame() {
         super("Tnyx Password manager"); //this.setTitle("Tnyx Password manager");
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() { @Override public void windowClosing(WindowEvent e) { Main.exitApplication(0); } });
 
         getRootPane().setBorder(BorderFactory.createMatteBorder(4, 4, 4, 4, new Color(53, 132, 228)));
 
@@ -190,7 +193,6 @@ public class LockFrame extends JFrame implements ActionListener {
 
         if (e.getSource() == exitButton){
             log("Exiting GUI", 2);
-            dispose();
             Main.exitApplication(0);
         }
 
@@ -202,16 +204,9 @@ public class LockFrame extends JFrame implements ActionListener {
             if (fileChooserExitCode == JFileChooser.APPROVE_OPTION){
                 file = new File(fileChooser.getSelectedFile().getAbsolutePath());
 
-                if (!(file.getAbsolutePath().endsWith(".tvlt"))){
-                    log("User submitted a file that is not a tvlt file", 3);
-                    selectedVaultPathLabel.setText("Selected file is not a Vault file");
-                    mayProceed = false; // allow continuation anyway. Only block on submit
-                } else {
-                    //selectedVaultPathLabel.setText(file.getAbsolutePath());
-                    String fileName = file.toPath().getFileName().toString(); // splitting using File.separator does not work on win bcs win FS is \ and \ is a regex keyword
-                    selectedVaultPathLabel.setText(fileName);
-                    mayProceed = true;
-                }
+                String fileName = file.toPath().getFileName().toString();
+                selectedVaultPathLabel.setText(fileName);
+                mayProceed = true;
 
                 selectedVaultPathLabel.setVisible(true);
                 SwingUtilities.invokeLater(() -> {
@@ -249,9 +244,11 @@ public class LockFrame extends JFrame implements ActionListener {
 
             try {
                 log("Creating a new vault", 2);
-                VaultHandler.createEncryptedVault(file.getAbsolutePath(), password);
-                JOptionPane.showMessageDialog(this, "Successfully created new vault.");
-                openVaultGui();
+                OpenedVault opened = VaultHandler.createEncryptedVault(file.getAbsolutePath(), password);
+                UiManager.setOpenedVault(opened);
+                UiManager.setMainFrameVault(file.getAbsolutePath());
+                UiManager.showMainScreen();
+                MainFrame.updateEntries();
             } catch (IOException ex) {
                 log("Could not create new vault from GUI", 3);
                 JOptionPane.showMessageDialog(
@@ -308,8 +305,8 @@ public class LockFrame extends JFrame implements ActionListener {
         }
     }
 
-    public void setPWFieldText(String str){
-        this.pwField.setText(str);
+    public void clearPassword(){
+        this.pwField.setText("");
     }
 
 

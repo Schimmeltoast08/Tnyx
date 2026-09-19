@@ -1,70 +1,12 @@
 package com.tnyx.vault;
 
-import java.util.UUID;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
+import java.util.UUID;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class VaultTest {
-
-    @Test
-    void addEntryAddsEntry() {
-        Vault vault = new Vault();
-        PasswordEntry entry = new PasswordEntry();
-
-        vault.addEntry(entry);
-
-        assertEquals(1, vault.getEntries().size());
-        assertEquals(entry, vault.getEntries().get(0));
-    }
-
-    @Test
-    void getEntryFindsCorrectEntry() {
-        Vault vault = new Vault();
-
-        PasswordEntry first = new PasswordEntry();
-        PasswordEntry second = new PasswordEntry();
-
-        vault.addEntry(first);
-        vault.addEntry(second);
-
-        assertSame(second, vault.getEntry(second.getId()));
-    }
-
-    @Test
-void removeEntryRemovesCorrectEntry() {
-    Vault vault = new Vault();
-
-    PasswordEntry first = new PasswordEntry();
-    PasswordEntry second = new PasswordEntry();
-
-    vault.addEntry(first);
-    vault.addEntry(second);
-
-    vault.removeEntry(first.getId());
-
-    assertEquals(1, vault.getEntries().size());
-
-}
-
-@Test
-void removingNonexistentEntryThrows() {
-    Vault vault = new Vault();
-
-    UUID id = UUID.randomUUID();
-
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> vault.removeEntry(id)
-    );
-}
-
-
-
-
-
-
-
-
+class VaultTest {
+    @Test void addEntryAddsEntry() { Vault v=new Vault(); PasswordEntry e=new PasswordEntry(); v.addEntry(e); assertSame(e,v.getEntries().get(0)); v.close(); }
+    @Test void duplicateIdRejected() { Vault v=new Vault(); UUID id=UUID.randomUUID(); v.addEntry(new PasswordEntry(id)); assertThrows(IllegalArgumentException.class, () -> v.addEntry(new PasswordEntry(id))); v.close(); }
+    @Test void removeEntryRemovesCorrectEntry() { Vault v=new Vault(); PasswordEntry a=new PasswordEntry(), b=new PasswordEntry(); v.addEntry(a); v.addEntry(b); v.removeEntry(a.getId()); assertEquals(1,v.getEntries().size()); v.close(); }
+    @Test void removingNonexistentEntryThrows() { Vault v=new Vault(); assertThrows(IllegalArgumentException.class, () -> v.removeEntry(UUID.randomUUID())); v.close(); }
 }

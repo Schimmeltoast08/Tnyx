@@ -2,6 +2,8 @@ package com.tnyx.crypto;
 
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Arrays;
@@ -41,13 +43,10 @@ public final class KeyDerivation {
             throw new IllegalArgumentException("Unsupported Argon2 parameters");
         }
 
-        ByteBuffer encoded = StandardCharsets.UTF_8.encode(CharBuffer.wrap(password));
-        byte[] passwordBytes = new byte[encoded.remaining()];
-        encoded.get(passwordBytes);
-
+        byte[] passwordBytes = encodePassword(password);
         try {
             Argon2Parameters parameters = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
-                    .withSalt(Arrays.copyOf(salt, salt.length))
+                    .withSalt(salt.clone())
                     .withMemoryAsKB(memoryKib)
                     .withIterations(iterations)
                     .withParallelism(parallelism)
@@ -55,17 +54,28 @@ public final class KeyDerivation {
 
             Argon2BytesGenerator generator = new Argon2BytesGenerator();
             generator.init(parameters);
-
             byte[] kek = new byte[outputLength];
             generator.generateBytes(passwordBytes, kek);
             return kek;
         } finally {
             Arrays.fill(passwordBytes, (byte) 0);
-            if (encoded.hasArray()) {
-                java.util.Arrays.fill(
-                        encoded.array(), encoded.arrayOffset(),
-                        encoded.arrayOffset() + encoded.capacity(), (byte) 0);
+        }
+    }
+
+    private static byte[] encodePassword(char[] password) {
+        try {
+            var encoder = StandardCharsets.UTF_8.newEncoder()
+                    .onMalformedInput(CodingErrorAction.REPORT)
+                    .onUnmappableCharacter(CodingErrorAction.REPORT);
+            ByteBuffer encoded = encoder.encode(CharBuffer.wrap(password));
+            if (encoded.remaining() > CryptoConstants.MAX_MASTER_PASSWORD_UTF8_BYTES) {
+                throw new IllegalArgumentException("Master password is too large");
             }
+            byte[] bytes = new byte[encoded.remaining()];
+            encoded.get(bytes);
+            return bytes;
+        } catch (CharacterCodingException e) {
+            throw new IllegalArgumentException("Master password contains invalid UTF-16", e);
         }
     }
 }

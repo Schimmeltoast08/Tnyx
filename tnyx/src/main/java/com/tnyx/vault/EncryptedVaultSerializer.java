@@ -115,6 +115,7 @@ public final class EncryptedVaultSerializer {
                 || v.getEncryptedDek().length != CryptoConstants.ENCRYPTED_DEK_LENGTH
                 || v.getDataNonce().length != CryptoConstants.NONCE_LENGTH
                 || v.getEncryptedData().length < CryptoConstants.GCM_TAG_BYTES
+                || v.getEncryptedData().length > CryptoConstants.MAX_VAULT_PLAINTEXT_SIZE + CryptoConstants.GCM_TAG_BYTES
                 || v.getArgon2MemoryKib() != CryptoConstants.ARGON2_MEMORY_KIB
                 || v.getArgon2Iterations() != CryptoConstants.ARGON2_ITERATIONS
                 || v.getArgon2Parallelism() != CryptoConstants.ARGON2_PARALLELISM

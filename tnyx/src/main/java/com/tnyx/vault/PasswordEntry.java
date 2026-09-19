@@ -1,12 +1,14 @@
 package com.tnyx.vault;
 
+import com.tnyx.crypto.CryptoConstants;
+
+import java.util.Arrays;
 import java.util.UUID;
 
-public class PasswordEntry {
-
+public final class PasswordEntry implements AutoCloseable {
     private String name = "";
     private String username = "";
-    private String password = "";
+    private char[] password = new char[0];
     private String url = "";
     private final UUID id;
 
@@ -15,79 +17,52 @@ public class PasswordEntry {
     }
 
     public PasswordEntry(UUID id) {
+        if (id == null) throw new IllegalArgumentException("id must not be null");
         this.id = id;
     }
 
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPasswordEntryData() {
-        return (this.name + " || " + this.username + " || " + this.password + " || " + this.url + " || " + this.id);
-    }
-
-    public UUID getId() {
-        return this.id;
-    }
-
-    public void editEntry(String name, String username, String url, String password) {
-
-        if (!(name.isEmpty())) {
-            this.name = name;
+    public String getUrl() { return url; }
+    public void setUrl(String url) { this.url = requireText(url, "url"); }
+    public char[] getPassword() { return password.clone(); }
+    public void setPassword(char[] password) {
+        if (password == null) throw new IllegalArgumentException("password must not be null");
+        try {
+            var encoder = java.nio.charset.StandardCharsets.UTF_8.newEncoder();
+            var encoded = encoder.encode(java.nio.CharBuffer.wrap(password));
+            if (encoded.remaining() > CryptoConstants.MAX_PASSWORD_BYTES) {
+                throw new IllegalArgumentException("password is too long");
+            }
+        } catch (java.nio.charset.CharacterCodingException e) {
+            throw new IllegalArgumentException("password contains invalid UTF-16", e);
         }
+        Arrays.fill(this.password, '\0');
+        this.password = password.clone();
+    }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = requireText(username, "username"); }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = requireText(name, "name"); }
+    public UUID getId() { return id; }
 
-        if (!(username.isEmpty())) {
-            this.username = username;
-        }
-
-        if (!(url.isEmpty())) {
-            this.url = url;
-        }
-
-        if (!(password.isEmpty())) {
-            this.password = password;
-        }
-
+    public void editEntry(String name, String username, String url, char[] password) {
+        if (!name.isEmpty()) setName(name);
+        if (!username.isEmpty()) setUsername(username);
+        if (!url.isEmpty()) setUrl(url);
+        if (password.length != 0) setPassword(password);
     }
 
-    public void printEntry(){
+    public int passwordLength() { return password.length; }
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("*".repeat(this.password.length()));
-
-        System.out.printf("Name           : %-10s%n", this.name);
-        System.out.printf("Username       : %-10s%n", this.username);
-        System.out.printf("Password       : %-10s%n", sb.toString());
-        System.out.printf("Url            : %-10s%n", this.url);
-
+    @Override
+    public void close() {
+        Arrays.fill(password, '\0');
+        password = new char[0];
     }
+
+    private static String requireText(String value, String field) {
+        if (value == null) throw new IllegalArgumentException(field + " must not be null");
+        return value;
+    }
+
 
 }

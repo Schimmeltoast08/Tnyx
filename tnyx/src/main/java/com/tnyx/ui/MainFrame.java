@@ -10,6 +10,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -34,13 +36,15 @@ public class MainFrame extends JFrame implements ActionListener {
     private final java.util.Map<UUID, EntryPanel> entryPanels = new java.util.HashMap<>();
 
     private String vaultPath;
+    private boolean dirty;
 
     public MainFrame() {
         instance = this;
         getRootPane().setBorder(BorderFactory.createMatteBorder(4, 4, 4, 4, new Color(53, 132, 228)));
         log("Created new MainFrame", 2);
 
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+        addWindowListener(new WindowAdapter() { @Override public void windowClosing(WindowEvent e) { if (prepareForLock(false)) Main.exitApplication(0); } });
         setTitle("Tnyx Password manager");
 
         contentPane = new JPanel(null);
@@ -59,8 +63,8 @@ public class MainFrame extends JFrame implements ActionListener {
 
         exitButton = new JButton("Exit");
         exitButton.addActionListener(e -> {
+            if (!prepareForLock(false)) return;
             log("Exiting GUI", 2);
-            dispose();
             Main.exitApplication(0);
         });
 
@@ -149,6 +153,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
     public void setOpenedVault(OpenedVault opVault) {
         openedVault = opVault;
+        dirty = false;
         vault = opVault == null ? null : opVault.getVault();
         clearSelection();
         if (opVault == null) {
@@ -203,9 +208,10 @@ public class MainFrame extends JFrame implements ActionListener {
         }
 
         vault.addEntry(entry);
-        saveVault();
+        dirty = true;
+        boolean saved = saveVault();
         refreshEntries();
-        selectEntry(entry.getId());
+        if (saved) selectEntry(entry.getId());
     }
 
     private void editEntry() {
@@ -219,9 +225,10 @@ public class MainFrame extends JFrame implements ActionListener {
             return;
         }
 
-        saveVault();
+        dirty = true;
+        boolean saved = saveVault();
         refreshEntries();
-        selectEntry(id);
+        if (saved) selectEntry(id);
     }
 
     private void deleteEntry() {
@@ -244,32 +251,38 @@ public class MainFrame extends JFrame implements ActionListener {
         }
 
         vault.removeEntry(id);
+        dirty = true;
         saveVault();
         refreshEntries();
     }
 
-    private void saveVault() {
+    private boolean saveVault() {
         if (vaultPath == null || openedVault == null) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    "The vault path is not set, so the change could not be saved.",
-                    "Could not save vault",
-                    JOptionPane.ERROR_MESSAGE
-            );
-            return;
+            JOptionPane.showMessageDialog(this, "The vault path is not set, so the change could not be saved.", "Could not save vault", JOptionPane.ERROR_MESSAGE);
+            return false;
         }
-
         try {
             VaultHandler.saveVault(vaultPath, openedVault);
+            dirty = false;
+            return true;
         } catch (IOException e) {
             log("Could not save vault from GUI: " + e.getMessage(), 4);
-            JOptionPane.showMessageDialog(
-                    this,
-                    "The vault was changed in memory, but could not be saved.\n" + e.getMessage(),
-                    "Could not save vault",
-                    JOptionPane.ERROR_MESSAGE
-            );
+            JOptionPane.showMessageDialog(this, "The vault was changed in memory, but could not be saved.\n" + e.getMessage(), "Could not save vault", JOptionPane.ERROR_MESSAGE);
+            return false;
         }
+    }
+
+    public boolean prepareForLock(boolean automatic) {
+        if (!dirty || openedVault == null) return true;
+        if (automatic) {
+            saveVault();
+            return true;
+        }
+        Object[] options = {"Save", "Discard", "Cancel"};
+        int result = JOptionPane.showOptionDialog(this, "There are unsaved changes.", "Unsaved Changes", JOptionPane.DEFAULT_OPTION, JOptionPane.WARNING_MESSAGE, null, options, options[0]);
+        if (result == 0) return saveVault();
+        if (result == 1) return true;
+        return false;
     }
 
     private void selectEntry(UUID id) {

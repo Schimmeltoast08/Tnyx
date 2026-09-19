@@ -34,10 +34,14 @@ public class UiManager {
         openedVault = opVault;
     }
 
-    public static void setMainFrameVault(){
+    public static void setMainFrameVault(String vaultPath){
             mainFrame.setOpenedVault(openedVault);
+            mainFrame.setVaultPath(vaultPath);
     }
 
+    public static void resetPWFieldOfLockscreen(){
+            lockFrame.setPWFieldText("");
+    }
 
 }
 

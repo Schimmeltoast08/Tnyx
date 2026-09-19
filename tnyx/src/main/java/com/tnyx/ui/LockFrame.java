@@ -45,6 +45,8 @@ public class LockFrame extends JFrame implements ActionListener {
         super("Tnyx Password manager"); //this.setTitle("Tnyx Password manager");
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        getRootPane().setBorder(BorderFactory.createMatteBorder(4, 4, 4, 4, new Color(53, 132, 228)));
+
 
         //this.setSize(500, 300);
         this.setLocationRelativeTo(null);
@@ -279,7 +281,7 @@ public class LockFrame extends JFrame implements ActionListener {
         try {
             OpenedVault vault = VaultHandler.openVault(file.getAbsolutePath(), password);
             UiManager.setOpenedVault(vault);
-            UiManager.setMainFrameVault();
+            UiManager.setMainFrameVault(file.getAbsolutePath());
             UiManager.showMainScreen();
             MainFrame.updateEntries();
         } catch (IOException ex) {
@@ -293,5 +295,11 @@ public class LockFrame extends JFrame implements ActionListener {
 
         }
     }
+
+    public void setPWFieldText(String str){
+        this.pwField.setText(str);
+    }
+
+
 
 }

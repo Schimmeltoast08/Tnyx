@@ -122,13 +122,11 @@ The build includes several reproducibility and dependency-safety measures:
 ## Screenshots
 
 The application is designed around a small number of focused screens:
-
 - **Lock screen** — choose a vault, enter the master password, create a new vault, or exit.
+<img width="719" height="369" alt="Tnyx-Home-Screen" src="https://github.com/user-attachments/assets/83ab0de9-2ba9-4057-8ee8-edf7905444c0" />-
 - **Vault view** — browse entries in a scrollable list.
-- **Entry actions** — add, edit, or delete entries.
-- **Password interaction** — temporarily reveal a password or copy it to the clipboard.
+<img width="1009" height="659" alt="Tnyx-Password-Screen" src="https://github.com/user-attachments/assets/c0413a00-5aa8-4c29-bfd5-cbe0cbf3f83a" />
 
-If you add screenshots to the repository later, this section is a good place to showcase the application itself.
 
 ---
 

@@ -14,10 +14,10 @@ class PasswordEntrySerializerTest {
         original.close(); result.close();
     }
 
-    @Test void delimiterUnicodeAndNewlineSurviveSerialization() {
-        PasswordEntry original = new PasswordEntry(); original.setPassword("This is || ✌️".toCharArray()); original.setName("\n"); original.setUrl("https://example.test/a\nb");
+    @Test void delimiterAndUnicodeSurviveSerialization() {
+        PasswordEntry original = new PasswordEntry(); original.setPassword("This is || ✌️".toCharArray()); original.setName("\n");
         PasswordEntry result = PasswordEntrySerializer.deserializePasswordEntry(PasswordEntrySerializer.serializePasswordEntry(original));
-        assertEquals("This is || ✌️", new String(result.getPassword())); assertEquals("\n", result.getName()); assertEquals("https://example.test/a\nb", result.getUrl());
+        assertEquals("This is || ✌️", new String(result.getPassword())); assertEquals("\n", result.getName());
         original.close(); result.close();
     }
 

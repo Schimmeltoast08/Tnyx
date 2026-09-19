@@ -1,0 +1,101 @@
+# ============================================================
+# Tnyx / Java / Maven
+# ============================================================
+
+# Maven build output
+/target/
+
+# Maven wrapper generated artifacts (keep the wrapper itself)
+/.mvn/timing.properties
+
+# ============================================================
+# IDEs
+# ============================================================
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# VS Code
+.vscode/
+
+# NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/.nb-gradle/
+
+# ============================================================
+# Java
+# ============================================================
+
+*.class
+*.jar
+*.war
+*.ear
+
+# JVM crash dumps
+hs_err_pid*
+replay_pid*
+
+# ============================================================
+# Logs
+# ============================================================
+
+*.log
+logs/
+
+# ============================================================
+# OS files
+# ============================================================
+
+.DS_Store
+.AppleDouble
+.LSOverride
+
+Thumbs.db
+Desktop.ini
+
+# ============================================================
+# Temporary / editor files
+# ============================================================
+
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+.#*
+
+# ============================================================
+# Local secrets / environment configuration
+# ============================================================
+
+.env
+.env.*
+!.env.example
+
+# Local credentials/configuration
+*.local
+*.secret
+*.secrets
+
+# ============================================================
+# Tnyx local vault/user data
+# ============================================================
+
+# Do NOT accidentally commit real password vaults.
+/*.vault
+/*.tnyx
+
+# Backups / temporary vault copies
+/*.vault.*
+/*.tnyx.*

@@ -31,10 +31,3 @@ Configure a trusted GPG signing key in your build environment, then run:
 mvn clean verify -Prelease-signing
 ```
 
-Never commit private keys, passphrases, or generated release signatures containing secrets to the repository.
-
-## Important build hygiene
-
-Do not commit `target/`. Always validate from a clean checkout. The repository intentionally contains no generated classes or stale Surefire reports.
-
-The build uses pinned dependency/plugin versions and a fixed output timestamp for reproducibility. Compare the generated JAR, SBOM, checksums, and GPG signatures as part of a release process.

@@ -485,13 +485,6 @@ When contributing:
 
 For security vulnerabilities, follow [`tnyx/SECURITY.md`](tnyx/SECURITY.md) instead of opening a public issue.
 
----
-
-## License
-
-No license file is currently included in the repository.
-
-If you intend Tnyx to be used, modified, or redistributed by others, add an explicit open-source license (or other licensing terms) to the repository before treating the project as licensed for external use.
 
 ---
 

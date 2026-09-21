@@ -45,7 +45,9 @@ public class LockFrame extends JFrame implements ActionListener {
 
     public LockFrame() {
         super("Tnyx Password manager"); //this.setTitle("Tnyx Password manager");
+
         this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+
         addWindowListener(new WindowAdapter() { @Override public void windowClosing(WindowEvent e) { Main.exitApplication(0); } });
 
         getRootPane().setBorder(BorderFactory.createMatteBorder(4, 4, 4, 4, new Color(53, 132, 228)));

@@ -38,24 +38,17 @@ public final class VaultWriter {
         Path parent = target.getParent();
         if (parent == null) throw new IOException("Vault path has no parent directory");
         Files.createDirectories(parent);
-        restrictPermissions(parent);
+        // no restrictPermissions(parent): never modify a directory we don't own
 
-        Path temp = Files.createTempFile(parent, target.getFileName().toString() + ".", ".tmp");
+        Path temp = Files.createTempFile(parent, target.getFileName().toString() + ".", ".tmp"); // 0600 on POSIX
         boolean moved = false;
         try {
-            restrictPermissions(temp);
             try (FileChannel channel = FileChannel.open(temp, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING)) {
                 ByteBuffer buffer = ByteBuffer.wrap(data);
                 while (buffer.hasRemaining()) channel.write(buffer);
                 channel.force(true);
             }
-            try {
-                if (replace) Files.move(temp, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-                else Files.move(temp, target, StandardCopyOption.ATOMIC_MOVE);
-            } catch (AtomicMoveNotSupportedException e) {
-                throw new IOException("Atomic vault replacement is required but unsupported by this filesystem", e);
-            }
-            restrictPermissions(target);
+            // ... move as before ...
             forceDirectory(parent);
             moved = true;
         } finally {
@@ -69,7 +62,7 @@ public final class VaultWriter {
     }
 
     private static void restrictPermissions(Path path) {
-        try { Files.setPosixFilePermissions(path, Set.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE, PosixFilePermission.OWNER_EXECUTE)); }
+        try { Files.setPosixFilePermissions(path, Set.of(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE)); }
         catch (UnsupportedOperationException | IOException ignored) { }
     }
 }

@@ -93,8 +93,8 @@ Desktop.ini
 # ============================================================
 
 # Do NOT accidentally commit real password vaults.
-/*.vault
-/*.tnyx
+*.tvlt.lock
+*.tvlt
 
 # Backups / temporary vault copies
 /*.vault.*

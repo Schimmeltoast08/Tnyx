@@ -247,12 +247,15 @@ public class LockFrame extends JFrame implements ActionListener {
             try {
                 log("Creating a new vault", 2);
                 OpenedVault opened = VaultHandler.createEncryptedVault(file.getAbsolutePath(), password);
+                clearPassword();
                 UiManager.setOpenedVault(opened);
                 UiManager.setMainFrameVault(file.getAbsolutePath());
                 UiManager.showMainScreen();
                 MainFrame.updateEntries();
             } catch (IOException ex) {
                 log("Could not create new vault from GUI", 3);
+                java.util.Arrays.fill(password, '\0');
+                clearPassword();
                 JOptionPane.showMessageDialog(
                         this,
                         "Could not create vault. Is the path correct?",

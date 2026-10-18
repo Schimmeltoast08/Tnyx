@@ -147,7 +147,7 @@ Tnyx is a desktop application. When launched normally, it opens the graphical in
 
 If you have a packaged build available, use that build rather than building from source.
 
-On Linux, the repository may include a `Tnyx.AppImage` release artifact. Make it executable and launch it:
+On Linux, you can download the released AppImage. Make it executeable and run it
 
 ```bash
 chmod +x Tnyx.AppImage

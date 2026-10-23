@@ -13,6 +13,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.UUID;
 
 import static com.tnyx.util.Log.log;
@@ -28,6 +29,7 @@ public class MainFrame extends JFrame implements ActionListener {
     private final JButton editEntryButton;
     private final JButton deleteEntryButton;
     private final JButton exitButton;
+    private final JButton changePasswordButton;
     private final JButton returnToLockFrameButton;
 
     private final JPanel entryList;
@@ -68,6 +70,9 @@ public class MainFrame extends JFrame implements ActionListener {
             Main.exitApplication(0);
         });
 
+        changePasswordButton = new JButton("Change Master Password");
+        changePasswordButton.addActionListener(e -> changeMasterPassword());
+
         returnToLockFrameButton = new JButton("Return to Lockscreen");
         returnToLockFrameButton.addActionListener(e -> {
             log("Returning to LockFrame", 2);
@@ -94,6 +99,7 @@ public class MainFrame extends JFrame implements ActionListener {
 
         JPanel appActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
 
+        appActions.add(changePasswordButton);
         appActions.add(returnToLockFrameButton);
         appActions.add(exitButton);
 
@@ -254,6 +260,36 @@ public class MainFrame extends JFrame implements ActionListener {
         dirty = true;
         saveVault();
         refreshEntries();
+    }
+
+    private void changeMasterPassword() {
+        if (vaultPath == null || openedVault == null) return;
+        JPasswordField[] pw = { new JPasswordField(25), new JPasswordField(25), new JPasswordField(25) };
+        String[] labels = { "Current password:", "New password:", "Confirm new password:" };
+        JPanel fields = new JPanel(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints(); c.insets = new Insets(5, 5, 5, 5); c.anchor = GridBagConstraints.WEST; c.fill = GridBagConstraints.HORIZONTAL;
+        for (int i = 0; i < 3; i++) {
+            c.gridy = i; c.gridx = 0; c.weightx = 0; fields.add(new JLabel(labels[i]), c);
+            c.gridx = 1; c.weightx = 1; fields.add(pw[i], c);
+        }
+        int result = JOptionPane.showConfirmDialog(this, fields, "Change Master Password", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        char[] oldPw = pw[0].getPassword(), newPw = pw[1].getPassword(), confirmPw = pw[2].getPassword();
+        for (JPasswordField f : pw) f.setText("");
+        try {
+            if (result != JOptionPane.OK_OPTION) return;
+            if (newPw.length == 0 || !Arrays.equals(newPw, confirmPw)) {
+                JOptionPane.showMessageDialog(this, newPw.length == 0 ? "New password cannot be empty." : "New passwords do not match.", "Invalid Password", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            VaultHandler.changeMasterPassword(vaultPath, openedVault, oldPw, newPw);
+            dirty = false;
+            JOptionPane.showMessageDialog(this, "Master password changed.", "Change Master Password", JOptionPane.INFORMATION_MESSAGE);
+        } catch (IOException e) {
+            log("Could not change master password from GUI: " + e.getMessage(), 4);
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Could not change master password", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            Arrays.fill(oldPw, '\0'); Arrays.fill(newPw, '\0'); Arrays.fill(confirmPw, '\0');
+        }
     }
 
     private boolean saveVault() {

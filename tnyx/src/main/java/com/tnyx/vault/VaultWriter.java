@@ -48,7 +48,12 @@ public final class VaultWriter {
                 while (buffer.hasRemaining()) channel.write(buffer);
                 channel.force(true);
             }
-            // ... move as before ...
+            try {
+                if (replace) Files.move(temp, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+                else Files.move(temp, target, StandardCopyOption.ATOMIC_MOVE);
+            } catch (AtomicMoveNotSupportedException e) {
+                throw new IOException("Atomic vault replacement is required but unsupported by this filesystem", e);
+            }
             forceDirectory(parent);
             moved = true;
         } finally {

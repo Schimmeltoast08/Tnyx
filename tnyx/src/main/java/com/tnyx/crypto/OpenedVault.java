@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 public final class OpenedVault implements AutoCloseable {
     private final Vault vault;
-    private final VaultSession session;
+    private VaultSession session;
     private final Path path;
     private final VaultFileLock fileLock;
     private byte[] encryptedFileFingerprint;
@@ -33,6 +33,14 @@ public final class OpenedVault implements AutoCloseable {
     public EncryptedVault getEncryptedVault() { ensureOpen(); return encryptedVault; }
     public Path getPath() { return path; }
     public byte[] getFingerprint() { ensureOpen(); return encryptedFileFingerprint.clone(); }
+
+    public synchronized VaultSession replaceSession(VaultSession newSession) {
+        ensureOpen();
+        if (newSession == null) throw new IllegalArgumentException("Session must not be null");
+        VaultSession old = session;
+        session = newSession;
+        return old;
+    }
 
     public void setEncryptedVault(EncryptedVault encryptedVault, byte[] fingerprint) {
         ensureOpen();

@@ -6,10 +6,12 @@ import com.tnyx.crypto.Encryption;
 import com.tnyx.crypto.KeyDerivation;
 import com.tnyx.crypto.OpenedVault;
 import com.tnyx.crypto.OpenedVaultData;
+import com.tnyx.crypto.VaultSession;
 
 import java.io.Console;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.Arrays;
@@ -165,6 +167,31 @@ public final class VaultHandler {
             throw e;
         } catch (Exception e) {
             throw new IOException("Could not save vault: " + e.getMessage(), e);
+        }
+    }
+
+    /** Re-keys an open vault: new salt, KEK and DEK. On any failure the old keys stay active. */
+    public static void changeMasterPassword(String filepath, OpenedVault opened, char[] oldPw, char[] newPw) throws IOException {
+        if (opened == null) throw new IOException("Vault is not open");
+        EncryptedVault prev = opened.getEncryptedVault();
+        byte[] fp = opened.getFingerprint();
+        try { CryptoEngine.openSession(prev, oldPw).close(); }
+        catch (GeneralSecurityException e) { throw new IOException("Current password is incorrect", e); }
+        byte[] serialized = null;
+        VaultSession old = null;
+        try {
+            serialized = VaultSerializer.serializeVault(opened.getVault());
+            OpenedVaultData fresh = CryptoEngine.encryptNewVault(serialized, newPw);
+            old = opened.replaceSession(fresh.getSession());
+            opened.setEncryptedVault(fresh.getEncryptedVault(), fp);
+            saveVault(filepath, opened);
+            old.close();
+            log("Master password changed", 2);
+        } catch (Exception e) {
+            if (old != null) { opened.replaceSession(old).close(); opened.setEncryptedVault(prev, fp); }
+            throw new IOException("Could not change master password: " + e.getMessage(), e);
+        } finally {
+            if (serialized != null) Arrays.fill(serialized, (byte) 0);
         }
     }
 
